@@ -201,45 +201,46 @@
   }
 
   async function carregarOddsReais() {
-    const API_KEY = "16ada9b33fb51ce54cec50790f0c0ff0";
-    const url = `https://api.the-odds-api.com/v4/sports/soccer_brazil_campeonato/odds/?apiKey=${API_KEY}&regions=us&markets=h2h&oddsFormat=decimal`;
+  const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
+  const url = `https://api.the-odds-api.com/v4/sports/soccer_brazil_campeonato/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey=${API_KEY}`;
 
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Erro na resposta da API");
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erro na resposta da API");
 
-      const data = await response.json();
-      const inputs = document.getElementById("inputs");
-      const qtd = parseInt(document.getElementById("quantidade").value);
-      document.getElementById("tipoAposta").value = "simples";
+    const data = await response.json();
+    const inputs = document.getElementById("inputs");
+    const qtd = parseInt(document.getElementById("quantidade").value);
+    document.getElementById("tipoAposta").value = "simples";
 
-      inputs.innerHTML = "<p><strong>Odds reais carregadas:</strong></p>";
+    inputs.innerHTML = "<p><strong>Odds reais carregadas:</strong></p>";
 
-      for (let i = 0; i < qtd; i++) {
-        const jogo = data[i];
-        const mercado = jogo?.bookmakers?.[0]?.markets?.[0];
+    for (let i = 0; i < qtd; i++) {
+      const jogo = data[i];
+      const mercado = jogo?.bookmakers?.[0]?.markets?.[0];
 
-        if (!mercado || mercado.outcomes.length < 2) continue;
+      if (!mercado || mercado.outcomes.length < 2) continue;
 
-        const timeA = mercado.outcomes[0].name;
-        const oddA = mercado.outcomes[0].price;
-        const timeB = mercado.outcomes[1].name;
-        const oddB = mercado.outcomes[1].price;
+      const timeA = mercado.outcomes[0].name;
+      const oddA = mercado.outcomes[0].price;
+      const timeB = mercado.outcomes[1].name;
+      const oddB = mercado.outcomes[1].price;
 
-        inputs.innerHTML += `
-          <div>
-            <input type="text" id="palpite${i + 1}" value="${timeA} ou ${timeB}" disabled />
-            <input type="number" step="0.01" id="odd${i + 1}" value="${Math.max(oddA, oddB).toFixed(2)}" />
-          </div>
-        `;
-      }
-
-      alert("Odds carregadas com sucesso!");
-    } catch (err) {
-      console.error("Erro ao buscar odds reais:", err);
-      alert("Erro ao buscar odds. Tente novamente mais tarde.");
+      inputs.innerHTML += `
+        <div>
+          <input type="text" id="palpite${i + 1}" value="${timeA} ou ${timeB}" disabled />
+          <input type="number" step="0.01" id="odd${i + 1}" value="${Math.max(oddA, oddB).toFixed(2)}" />
+        </div>
+      `;
     }
+
+    alert("Odds carregadas com sucesso!");
+  } catch (err) {
+    console.error("Erro ao buscar odds reais:", err);
+    alert("Erro ao buscar odds. Tente novamente mais tarde.");
   }
+}
+
 </script>
 
 </body>
