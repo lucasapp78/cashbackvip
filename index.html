@@ -61,6 +61,10 @@
 
   <label for="tipoAposta">Modo de aposta:</label>
   <select id="tipoAposta" onchange="atualizarCampos()">
+  <label for="oddMin">Odd mínima:</label>
+  <input type="number" id="oddMin" step="0.01" value="1.10" />
+  <label for="oddMax">Odd máxima:</label>
+  <input type="number" id="oddMax" step="0.01" value="10.00" />
     <option value="simples">Simples (1X2)</option>
     <option value="placar">Placar Exato</option>
     <option value="btts">Ambas Marcam (BTTS)</option>
@@ -116,91 +120,65 @@
     return res;
   }
 
-  function gerarDesdobramento() {
-    const qtd = parseInt(document.getElementById("quantidade").value);
-    const tipo = document.getElementById("tipoAposta").value;
-    const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
-    const stake = parseFloat(document.getElementById("stake").value);
-    const jogos = [];
+  
+function gerarDesdobramento() {
+  const tipo = document.getElementById("tipoAposta").value;
+  const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
+  const stake = parseFloat(document.getElementById("stake").value);
+  const checkboxes = document.querySelectorAll(".jogoCheck:checked");
 
-    if (tipoDesdobramento > qtd) {
-      alert(`Você selecionou apenas ${qtd} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
-      return;
-    }
-
-    if (isNaN(stake) || stake <= 0) {
-      alert("Insira valor de aposta válido.");
-      return;
-    }
-
-    for (let i = 1; i <= qtd; i++) {
-      const odd = parseFloat(document.getElementById("odd" + i).value);
-      if (isNaN(odd) || odd <= 1) {
-        alert("Odd inválida no Jogo " + i);
-        return;
-      }
-
-      const palpite = document.getElementById("palpite" + i)?.value.trim() || "";
-      let nome = "";
-
-      switch (tipo) {
-        case "placar":
-          nome = `Placar: ${palpite}`;
-          break;
-        case "dupla":
-          nome = `Dupla Chance: ${palpite}`;
-          break;
-        case "resultado_gols":
-          nome = `Resultado+Gols: ${palpite}`;
-          break;
-        case "btts":
-          nome = `Ambas Marcam`;
-          break;
-        case "over25":
-          nome = `Mais de 2.5 Gols`;
-          break;
-        case "under25":
-          nome = `Menos de 2.5 Gols`;
-          break;
-        default:
-          nome = palpite || `Jogo ${i}`;
-      }
-
-      jogos.push({ jogo: nome, odd: odd });
-    }
-
-    const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
-    let html = `<h3>${tipoDesdobramento === 1 ? 'Apostas Simples' : `Combinações ${tipoDesdobramento} em ${qtd}`} (${document.querySelector("#tipoAposta option:checked").textContent})</h3>`;
-    html += `<table><thead><tr><th>#</th><th>Combinação</th><th>Odd Total</th><th>Retorno</th></tr></thead><tbody>`;
-
-    let totalRetorno = 0;
-
-    combinacoes.forEach((combo, i) => {
-      const nomes = combo.map(j => `${j.jogo} (${j.odd.toFixed(2)})`).join(", ");
-      const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
-      const retorno = stake * oddTotal;
-      totalRetorno += retorno;
-
-      html += `
-        <tr>
-          <td data-label="#">${i + 1}</td>
-          <td data-label="Combinação">${nomes}</td>
-          <td data-label="Odd Total">${oddTotal.toFixed(2)}</td>
-          <td data-label="Retorno">R$ ${retorno.toFixed(2)}</td>
-        </tr>`;
-    });
-
-    const totalApostado = (combinacoes.length * stake).toFixed(2);
-
-    html += `</tbody></table>
-             <p><strong>Total de ${tipoDesdobramento === 1 ? 'apostas simples' : 'combinações'}:</strong> ${combinacoes.length}</p>
-             <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
-             <p style="color:green;"><strong>Retorno estimado se acertar todos os jogos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
-
-    document.getElementById("resultado").innerHTML = html;
+  if (checkboxes.length < tipoDesdobramento) {
+    alert(`Você selecionou apenas ${checkboxes.length} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
+    return;
   }
 
-  async function carregarOddsReais() {
+  if (isNaN(stake) || stake <= 0) {
+    alert("Insira valor de aposta válido.");
+    return;
+  }
+
+  const jogos = Array.from(checkboxes).map((cb, i) => {
+    return {
+      jogo: cb.dataset.nome,
+      odd: parseFloat(cb.dataset.odd)
+    };
+  });
+
+  const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
+  let html = `<h3>${tipoDesdobramento === 1 ? 'Apostas Simples' : `Combinações ${tipoDesdobramento}`} (${document.querySelector("#tipoAposta option:checked").textContent})</h3>`;
+  html += `<table><thead><tr><th>#</th><th>Combinação</th><th>Odd Total</th><th>Retorno</th></tr></thead><tbody>`;
+
+  let totalRetorno = 0;
+
+  combinacoes.forEach((combo, i) => {
+    const nomes = combo.map(j => `${j.jogo} (${j.odd.toFixed(2)})`).join(", ");
+    const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
+    const retorno = stake * oddTotal;
+    totalRetorno += retorno;
+
+    html += `
+      <tr>
+        <td data-label="#">${i + 1}</td>
+        <td data-label="Combinação">${nomes}</td>
+        <td data-label="Odd Total">${oddTotal.toFixed(2)}</td>
+        <td data-label="Retorno">R$ ${retorno.toFixed(2)}</td>
+      </tr>`;
+  });
+
+  const totalApostado = (combinacoes.length * stake).toFixed(2);
+
+  html += `</tbody></table>
+           <p><strong>Total de ${tipoDesdobramento === 1 ? 'apostas simples' : 'combinações'}:</strong> ${combinacoes.length}</p>
+           <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
+           <p style="color:green;"><strong>Retorno estimado se acertar todos os jogos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
+
+  document.getElementById("resultado").innerHTML = html;
+}
+
+  }
+
+  
+async function carregarOddsReais() {
   const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
   const url = `https://api.the-odds-api.com/v4/sports/soccer_brazil_campeonato/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey=${API_KEY}`;
 
@@ -210,36 +188,48 @@
 
     const data = await response.json();
     const inputs = document.getElementById("inputs");
-    const qtd = parseInt(document.getElementById("quantidade").value);
+    const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
+    const oddMax = parseFloat(document.getElementById("oddMax").value) || 10.00;
     document.getElementById("tipoAposta").value = "simples";
 
-    inputs.innerHTML = "<p><strong>Odds reais carregadas:</strong></p>";
+    inputs.innerHTML = "<p><strong>Selecione os jogos que deseja usar:</strong></p>";
 
-    for (let i = 0; i < qtd; i++) {
-      const jogo = data[i];
+    let jogoCount = 0;
+
+    data.forEach((jogo, i) => {
       const mercado = jogo?.bookmakers?.[0]?.markets?.[0];
+      if (!mercado || mercado.outcomes.length < 2) return;
 
-      if (!mercado || mercado.outcomes.length < 2) continue;
+      const outcomeA = mercado.outcomes[0];
+      const outcomeB = mercado.outcomes[1];
+      const maiorOdd = Math.max(outcomeA.price, outcomeB.price);
 
-      const timeA = mercado.outcomes[0].name;
-      const oddA = mercado.outcomes[0].price;
-      const timeB = mercado.outcomes[1].name;
-      const oddB = mercado.outcomes[1].price;
+      if (maiorOdd < oddMin || maiorOdd > oddMax) return;
+
+      jogoCount++;
 
       inputs.innerHTML += `
         <div>
-          <input type="text" id="palpite${i + 1}" value="${timeA} ou ${timeB}" disabled />
-          <input type="number" step="0.01" id="odd${i + 1}" value="${Math.max(oddA, oddB).toFixed(2)}" />
+          <label>
+            <input type="checkbox" class="jogoCheck" data-nome="${outcomeA.name} ou ${outcomeB.name}" data-odd="${maiorOdd.toFixed(2)}" />
+            ${outcomeA.name} ou ${outcomeB.name} - Odd: ${maiorOdd.toFixed(2)}
+          </label>
         </div>
       `;
+    });
+
+    if (jogoCount === 0) {
+      inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada no intervalo definido.</p>";
+    } else {
+      alert("Selecione os jogos desejados.");
     }
 
-    alert("Odds carregadas com sucesso!");
   } catch (err) {
     console.error("Erro ao buscar odds reais:", err);
     alert("Erro ao buscar odds. Tente novamente mais tarde.");
   }
 }
+
 
 </script>
 
