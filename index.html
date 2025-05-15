@@ -202,7 +202,7 @@
 
   async function carregarOddsReais() {
     const API_KEY = "16ada9b33fb51ce54cec50790f0c0ff0";
-    const url = `https://api.the-odds-api.com/v4/sports/soccer_brazil_campeonato/odds/?apiKey=${API_KEY}&regions=br&markets=h2h&oddsFormat=decimal`;
+    const url = `https://api.the-odds-api.com/v4/sports/soccer_brazil_campeonato/odds/?apiKey=${API_KEY}&regions=us&markets=h2h&oddsFormat=decimal`;
 
     try {
       const response = await fetch(url);
