@@ -103,7 +103,7 @@
   <label for="tipoAposta">Modo de aposta:</label>
   <select id="tipoAposta">
     <option value="simples">Simples (1X2)</option>
-    <option value="outros">Outro Mercado (todos os tipos)</option>
+    <option value="outros">Outro Mercado (totals, btts, double_chance)</option>
     <option value="placar">Placar Exato</option>
     <option value="btts">Ambas Marcam (BTTS)</option>
     <option value="over25">Mais de 2.5 Gols</option>
@@ -238,12 +238,15 @@ async function carregarOddsReais() {
 
   
   if (tipoAposta === "outros") {
-    const allMarkets = "totals,btts,correct_score,double_chance,match_winner_and_totals";
+    const allMarkets = "totals,btts,double_chance";
     const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${allMarkets}&oddsFormat=decimal&apiKey=${API_KEY}`;
 
     try {
       const response = await fetch(marketsUrl);
-      if (!response.ok) throw new Error("Erro na resposta da API");
+      if (!response.ok) {
+        console.error("Código de erro HTTP:", response.status);
+        throw new Error("Erro na resposta da API");
+      }
 
       const data = await response.json();
       inputs.innerHTML = "";
@@ -280,15 +283,15 @@ async function carregarOddsReais() {
       });
 
       if (count === 0) {
-        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos outros mercados.</p>";
+        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos outros mercados disponíveis.</p>";
       } else {
         alert("Selecione os mercados desejados.");
       }
 
       return;
     } catch (err) {
-      console.error("Erro ao buscar odds:", err);
-      alert("Erro ao buscar mercados. Tente novamente mais tarde.");
+      console.error("Erro ao buscar mercados (detalhes):", err);
+      alert("Erro ao buscar mercados. Verifique a chave da API ou tente novamente mais tarde.");
       return;
     }
   }
