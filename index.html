@@ -210,21 +210,53 @@ function gerarDesdobramento(combinacoesPersonalizadas = null) {
 
 
 
+<script>
 async function carregarOddsReais() {
   const API_KEY = "69b92fb729838ba69139a6d92c457f83";
+  const inputs = document.getElementById("inputs");
+  inputs.innerHTML = "Carregando jogos...";
 
-  alert("⚠️ A integração com a API-Football ainda está sendo configurada. Em breve os dados reais aparecerão aqui.");
+  try {
+    const res = await fetch("https://v3.football.api-sports.io/fixtures?league=71&season=2024", {
+      headers: { "x-apisports-key": API_KEY }
+    });
 
-  // TODO: Substituir por chamada real à API-Football (https://api-football.com/documentation-v3)
-  // Exemplo de chamada usando fetch:
-  /*
-  const response = await fetch("https://v3.football.api-sports.io/fixtures?league=71&season=2024", {
-    headers: { "x-apisports-key": API_KEY }
-  });
-  const data = await response.json();
-  console.log(data);
-  */
+    const data = await res.json();
+    const jogos = data.response;
+    inputs.innerHTML = "";
+
+    jogos.slice(0, 10).forEach(jogo => {
+      const home = jogo.teams.home.name;
+      const away = jogo.teams.away.name;
+      const date = jogo.fixture.date.slice(0, 10);
+
+      const bloco = `
+        <div class="game-card" data-times="${home.toLowerCase()} ${away.toLowerCase()}" data-competicao="${date}">
+          <div class="game-title">${home} vs ${away}</div>
+          <div class="game-option">
+            <input type="checkbox" class="jogoCheck" data-nome="${home} vs ${away} - Vitória ${home}" data-odd="1.80" />
+            <span class="icon">🏆</span> Vitória ${home} @ 1.80
+          </div>
+          <div class="game-option">
+            <input type="checkbox" class="jogoCheck" data-nome="${home} vs ${away} - Empate" data-odd="3.20" />
+            <span class="icon">🤝</span> Empate @ 3.20
+          </div>
+          <div class="game-option">
+            <input type="checkbox" class="jogoCheck" data-nome="${home} vs ${away} - Vitória ${away}" data-odd="4.00" />
+            <span class="icon">⚔️</span> Vitória ${away} @ 4.00
+          </div>
+        </div>
+      `;
+
+      inputs.innerHTML += bloco;
+    });
+
+  } catch (err) {
+    console.error("Erro ao buscar jogos da API-Football:", err);
+    inputs.innerHTML = "<p style='color:red;'>Erro ao carregar jogos.</p>";
+  }
 }
+
 </script>
 </input></body>
 </html>
