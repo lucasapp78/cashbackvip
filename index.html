@@ -1,12 +1,13 @@
 
 <!DOCTYPE html>
+
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>L.A Cashback VIP 👑</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>L.A Cashback VIP 👑</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; margin: 0; }
     h2 { text-align: center; color: #333; }
 
@@ -89,72 +90,59 @@
   </style>
 </head>
 <body>
-  <h2>L.A Cashback VIP 👑</h2>
-
-  <!-- Novas funcionalidades -->
-  <label for="liga">Escolha a Liga:</label>
-  <select id="liga">
-    <option value="soccer_brazil_campeonato">Brasileirão</option>
-    <option value="soccer_epl">Premier League</option>
-    <option value="soccer_uefa_champs_league">Champions League</option>
-    <option value="soccer_copa_libertadores">Libertadores</option>
-  </select>
-
-  <label for="tipoAposta">Modo de aposta:</label>
-  <select id="tipoAposta">
-    <option value="simples">Simples (1X2)</option>
-    <option value="outros">Outro Mercado (totals, correct_score)</option>
-    <option value="placar">Placar Exato</option>
-    <option value="btts">Ambas Marcam (BTTS)</option>
-    <option value="over25">Mais de 2.5 Gols</option>
-    <option value="under25">Menos de 2.5 Gols</option>
-    <option value="dupla">Dupla Chance</option>
-    <option value="resultado_gols">Resultado + Gols</option>
-  </select>
-
-  <div style="display: flex; gap: 10px;">
-    <div style="flex:1">
-      <label for="oddMin">Odd mínima:</label>
-      <input type="number" id="oddMin" step="0.01" value="1.10" />
-    </div>
-    <div style="flex:1">
-      <label for="oddMax">Odd máxima:</label>
-      <input type="number" id="oddMax" step="0.01" value="10.00" />
-    </div>
-  </div>
-
-  <button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
-
-  <input type="text" id="filtro" class="search-bar" placeholder="Filtrar por nome do time...">
-  <input type="text" id="filtroCompeticao" class="search-bar" placeholder="Filtrar por competição ou data...">
-
-  <div class="button-group">
-    <button onclick="selecionarTodos()">Selecionar Todos</button>
-    <button onclick="limparSelecao()">Limpar Seleção</button>
-    <button onclick="montarMelhorCombo()">🎯 Melhor Combo</button>
-  </div>
-
-  <div id="inputs"></div>
-
-  <label for="tipoDesdobramento">Tipo de aposta (acertos):</label>
-  <select id="tipoDesdobramento">
-    <option value="1">1 (simples)</option><option value="2">2 (duplas)</option>
-    <option value="3">3 (trios)</option><option value="4">4 (quartetos)</option>
-    <option value="5">5 (quinas)</option><option value="6">6 (senas)</option>
-    <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
-  </select>
-
-  <input type="number" step="0.01" placeholder="Valor por combinação (R$)" id="stake" value="10" />
-
-  <button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
-
-  <div class="button-group">
-    <button onclick="baixarTXT()">📄 Baixar .txt</button>
-    <button onclick="baixarPDF()">📥 Baixar PDF</button>
-  </div>
-
-  <div id="resultado"></div>
-
+<h2>L.A Cashback VIP 👑</h2>
+<!-- Novas funcionalidades -->
+<label for="liga">Escolha a Liga:</label>
+<select id="liga">
+<option value="soccer_brazil_campeonato">Brasileirão</option>
+<option value="soccer_epl">Premier League</option>
+<option value="soccer_uefa_champs_league">Champions League</option>
+<option value="soccer_copa_libertadores">Libertadores</option>
+</select>
+<label for="tipoAposta">Modo de aposta:</label>
+<select id="tipoAposta">
+<option value="simples">Simples (1X2)</option>
+<option value="outros">Outro Mercado (totals, correct_score)</option>
+<option value="placar">Placar Exato</option>
+<option value="btts">Ambas Marcam (BTTS)</option>
+<option value="over25">Mais de 2.5 Gols</option>
+<option value="under25">Menos de 2.5 Gols</option>
+<option value="dupla">Dupla Chance</option>
+<option value="resultado_gols">Resultado + Gols</option>
+</select>
+<div style="display: flex; gap: 10px;">
+<div style="flex:1">
+<label for="oddMin">Odd mínima:</label>
+<input id="oddMin" step="0.01" type="number" value="1.10"/>
+</div>
+<div style="flex:1">
+<label for="oddMax">Odd máxima:</label>
+<input id="oddMax" step="0.01" type="number" value="10.00"/>
+</div>
+</div>
+<button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
+<input class="search-bar" id="filtro" placeholder="Filtrar por nome do time..." type="text"/>
+<input class="search-bar" id="filtroCompeticao" placeholder="Filtrar por competição ou data..." type="text"/>
+<div class="button-group">
+<button onclick="selecionarTodos()">Selecionar Todos</button>
+<button onclick="limparSelecao()">Limpar Seleção</button>
+<button onclick="montarMelhorCombo()">🎯 Melhor Combo</button>
+</div>
+<div id="inputs"></div>
+<label for="tipoDesdobramento">Tipo de aposta (acertos):</label>
+<select id="tipoDesdobramento">
+<option value="1">1 (simples)</option><option value="2">2 (duplas)</option>
+<option value="3">3 (trios)</option><option value="4">4 (quartetos)</option>
+<option value="5">5 (quinas)</option><option value="6">6 (senas)</option>
+<option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+</select>
+<input id="stake" placeholder="Valor por combinação (R$)" step="0.01" type="number" value="10">
+<button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
+<div class="button-group">
+<button onclick="baixarTXT()">📄 Baixar .txt</button>
+<button onclick="baixarPDF()">📥 Baixar PDF</button>
+</div>
+<div id="resultado"></div>
 <script>
 function gerarCombinacoes(array, k) {
   let res = [];
@@ -221,225 +209,22 @@ function gerarDesdobramento(combinacoesPersonalizadas = null) {
 }
 
 
+
 async function carregarOddsReais() {
-  const API_KEY = "16ada9b33fb51ce54cec50790f0c0ff0";
-  const liga = document.getElementById("liga").value;
-  const tipoAposta = document.getElementById("tipoAposta").value;
-  const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
-  const oddMax = parseFloat(document.getElementById("oddMax").value) || 10.00;
-  const inputs = document.getElementById("inputs");
+  const API_KEY = "69b92fb729838ba69139a6d92c457f83";
 
-  let market = "h2h";
-  if (tipoAposta === "over25" || tipoAposta === "under25") market = "totals";
-  else if (tipoAposta === "btts") market = "btts";
-  else if (tipoAposta === "placar") market = "correct_score";
-  else if (tipoAposta === "dupla") market = "double_chance";
-  else if (tipoAposta === "resultado_gols") market = "match_winner_and_totals";
+  alert("⚠️ A integração com a API-Football ainda está sendo configurada. Em breve os dados reais aparecerão aqui.");
 
-  
-  if (tipoAposta === "outros") {
-    const allMarkets = "totals,correct_score";
-    const region = "eu";
-    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=${region}&markets=${allMarkets}&oddsFormat=decimal&apiKey=${API_KEY}`;
-
-    try {
-      const response = await fetch(marketsUrl);
-      if (!response.ok) {
-        console.error("Código de erro HTTP:", response.status);
-        console.error("URL requisitada:", marketsUrl);
-        throw new Error("Erro na resposta da API");
-      }
-
-      const data = await response.json();
-      inputs.innerHTML = "";
-      let count = 0;
-
-      data.forEach(jogo => {
-        if (!jogo.bookmakers || jogo.bookmakers.length === 0) return;
-
-        let bloco = '';
-        jogo.bookmakers.forEach(bookmaker => {
-          bookmaker.markets.forEach(market => {
-            if (market.key === "h2h") return;
-
-            market.outcomes.forEach(outcome => {
-              if (outcome.price >= oddMin && outcome.price <= oddMax) {
-                bloco += `<div class="game-option">
-                  <input type="checkbox" class="jogoCheck"
-                         data-nome="${jogo.home_team} vs ${jogo.away_team} - ${market.key} - ${outcome.name}"
-                         data-odd="${outcome.price.toFixed(2)}" />
-                  <span class="icon">🎯</span> ${market.key.toUpperCase()} - ${outcome.name} @ ${outcome.price.toFixed(2)}
-                </div>`;
-              }
-            });
-          });
-        });
-
-        if (bloco !== '') {
-          count++;
-          inputs.innerHTML += `<div class="game-card" data-times="${jogo.home_team.toLowerCase()} ${jogo.away_team.toLowerCase()}" data-competicao="${jogo.commence_time}">
-            <div class="game-title">${jogo.home_team} vs ${jogo.away_team}</div>
-            ${bloco}
-          </div>`;
-        }
-      });
-
-      if (count === 0) {
-        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos mercados suportados.</p>";
-      } else {
-        alert("Selecione os mercados desejados.");
-      }
-
-      return;
-    } catch (err) {
-      console.error("Erro ao buscar mercados (detalhes):", err);
-      alert("Erro ao buscar mercados. Verifique sua chave da API ou tente mais tarde.");
-      return;
-    }
-  }
-    
-  const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${market}&oddsFormat=decimal&apiKey=${API_KEY}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Erro na resposta da API");
-
-    const data = await response.json();
-    inputs.innerHTML = "";
-    let jogoCount = 0;
-
-    data.forEach(jogo => {
-      const mercado = jogo?.bookmakers?.[0]?.markets?.[0];
-      if (!mercado || mercado.outcomes.length === 0) return;
-
-      let bloco = '';
-      let adicionou = false;
-
-      mercado.outcomes.forEach(outcome => {
-        let nomeExibicao = outcome.name;
-        let icon = "🎯";
-
-        if (market === "totals") {
-          const isOver = outcome.name.includes("Over");
-          const valorGols = parseFloat(outcome.name.split(" ")[1]);
-          if ((tipoAposta === "over25" && isOver && valorGols === 2.5) ||
-              (tipoAposta === "under25" && !isOver && valorGols === 2.5)) {
-            if (outcome.price >= oddMin && outcome.price <= oddMax) {
-              adicionou = true;
-              bloco += `<div class="game-option">
-                <input type="checkbox" class="jogoCheck"
-                       data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}"
-                       data-odd="${outcome.price.toFixed(2)}" />
-                <span class="icon">${icon}</span> ${outcome.name} @ ${outcome.price.toFixed(2)}
-              </div>`;
-            }
-          }
-        } else if (market === "btts") {
-          if (tipoAposta === "btts" && outcome.name === "Yes" &&
-              outcome.price >= oddMin && outcome.price <= oddMax) {
-            adicionou = true;
-            bloco += `<div class="game-option">
-              <input type="checkbox" class="jogoCheck"
-                     data-nome="${jogo.home_team} vs ${jogo.away_team} - Ambas Marcam (Sim)"
-                     data-odd="${outcome.price.toFixed(2)}" />
-              <span class="icon">${icon}</span> Sim @ ${outcome.price.toFixed(2)}
-            </div>`;
-          }
-        } else {
-          if (outcome.price >= oddMin && outcome.price <= oddMax) {
-            adicionou = true;
-            bloco += `<div class="game-option">
-              <input type="checkbox" class="jogoCheck"
-                     data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}"
-                     data-odd="${outcome.price.toFixed(2)}" />
-              <span class="icon">${icon}</span> ${outcome.name} @ ${outcome.price.toFixed(2)}
-            </div>`;
-          }
-        }
-      });
-
-      if (adicionou) {
-        jogoCount++;
-        inputs.innerHTML += `<div class="game-card" data-times="${jogo.home_team.toLowerCase()} ${jogo.away_team.toLowerCase()}" data-competicao="${jogo.commence_time}">
-          <div class="game-title">${jogo.home_team} vs ${jogo.away_team}</div>
-          ${bloco}
-        </div>`;
-      }
-    });
-
-    if (jogoCount === 0) {
-      inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada no intervalo definido para esse tipo de aposta.</p>";
-    } else {
-      alert("Selecione os resultados desejados para apostar.");
-    }
-
-  } catch (err) {
-    console.error("Erro ao buscar odds reais:", err);
-    alert("Erro ao buscar odds. Tente novamente mais tarde.");
-  }
-}
-
-
-function selecionarTodos() {
-  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = true);
-}
-
-function limparSelecao() {
-  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = false);
-}
-
-function baixarTXT() {
-  let texto = document.getElementById("resultado").innerText;
-  let blob = new Blob([texto], { type: "text/plain" });
-  let link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "bilhetes.txt";
-  link.click();
-}
-
-function baixarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let texto = document.getElementById("resultado").innerText.split("\n");
-  let y = 10;
-  texto.forEach(linha => {
-    if (y > 280) { doc.addPage(); y = 10; }
-    doc.text(linha, 10, y);
-    y += 7;
+  // TODO: Substituir por chamada real à API-Football (https://api-football.com/documentation-v3)
+  // Exemplo de chamada usando fetch:
+  /*
+  const response = await fetch("https://v3.football.api-sports.io/fixtures?league=71&season=2024", {
+    headers: { "x-apisports-key": API_KEY }
   });
-  doc.save("bilhetes.pdf");
+  const data = await response.json();
+  console.log(data);
+  */
 }
-
-function montarMelhorCombo() {
-  const checkboxes = Array.from(document.querySelectorAll(".jogoCheck"));
-  const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
-  const stake = parseFloat(document.getElementById("stake").value);
-  if (checkboxes.length < tipoDesdobramento) {
-    alert("Não há jogos suficientes selecionáveis para esse combo.");
-    return;
-  }
-  const jogos = checkboxes.map(cb => ({
-    jogo: cb.dataset.nome,
-    odd: parseFloat(cb.dataset.odd)
-  }));
-
-  const melhores = jogos.sort((a, b) => b.odd - a.odd).slice(0, tipoDesdobramento);
-  gerarDesdobramento([melhores]);
-}
-
-document.getElementById("filtro").addEventListener("input", function () {
-  const termo = this.value.toLowerCase();
-  document.querySelectorAll(".game-card").forEach(card => {
-    card.style.display = card.dataset.times.includes(termo) ? "block" : "none";
-  });
-});
-
-document.getElementById("filtroCompeticao").addEventListener("input", function () {
-  const termo = this.value.toLowerCase();
-  document.querySelectorAll(".game-card").forEach(card => {
-    card.style.display = card.dataset.competicao.includes(termo) ? "block" : "none";
-  });
-});
 </script>
-</body>
+</input></body>
 </html>
