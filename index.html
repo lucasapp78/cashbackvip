@@ -155,7 +155,191 @@
   <div id="resultado"></div>
 
 <script>
-// Funções aqui (serão adicionadas na próxima célula)
+function gerarCombinacoes(array, k) {
+  let res = [];
+  function comb(start, combo) {
+    if (combo.length === k) return res.push(combo);
+    for (let i = start; i < array.length; i++) {
+      comb(i + 1, combo.concat([array[i]]));
+    }
+  }
+  comb(0, []);
+  return res;
+}
+
+let ultimaCombinacao = [];
+
+function gerarDesdobramento(combinacoesPersonalizadas = null) {
+  const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
+  const stake = parseFloat(document.getElementById("stake").value);
+  const checkboxes = document.querySelectorAll(".jogoCheck:checked");
+
+  if (checkboxes.length < tipoDesdobramento && !combinacoesPersonalizadas) {
+    alert(`Você selecionou apenas ${checkboxes.length} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
+    return;
+  }
+
+  if (isNaN(stake) || stake <= 0) {
+    alert("Insira valor de aposta válido.");
+    return;
+  }
+
+  const jogos = combinacoesPersonalizadas || Array.from(checkboxes).map(cb => ({
+    jogo: cb.dataset.nome,
+    odd: parseFloat(cb.dataset.odd)
+  }));
+
+  const combinacoes = combinacoesPersonalizadas || gerarCombinacoes(jogos, tipoDesdobramento);
+  ultimaCombinacao = combinacoes;
+
+  let html = `<h3>Combinações ${tipoDesdobramento} (${document.querySelector("#tipoAposta option:checked").textContent})</h3>`;
+  let totalRetorno = 0;
+
+  combinacoes.forEach((combo, i) => {
+    const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
+    const retorno = stake * oddTotal;
+    totalRetorno += retorno;
+
+    const selecoes = combo.map(j => `- ${j.jogo.split(" - ")[1]} (${j.odd.toFixed(2)})`).join("<br>");
+
+    html += `
+      <div class="combo-card">
+        <h4>Bilhete ${i + 1} - Odd Total: ${oddTotal.toFixed(2)}</h4>
+        <p>${selecoes}</p>
+        <div class="combo-retorno">Retorno: R$ ${retorno.toFixed(2)}</div>
+      </div>`;
+  });
+
+  const totalApostado = (combinacoes.length * stake).toFixed(2);
+  html += `
+    <p><strong>Total de combinações:</strong> ${combinacoes.length}</p>
+    <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
+    <p style="color:green;"><strong>Retorno estimado se acertar todos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
+
+  document.getElementById("resultado").innerHTML = html;
+}
+
+async function carregarOddsReais() {
+  const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
+  const liga = document.getElementById("liga").value;
+  const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erro na resposta da API");
+
+    const data = await response.json();
+    const inputs = document.getElementById("inputs");
+    const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
+    const oddMax = parseFloat(document.getElementById("oddMax").value) || 10.00;
+    document.getElementById("tipoAposta").value = "simples";
+
+    inputs.innerHTML = "";
+    let jogoCount = 0;
+
+    data.forEach(jogo => {
+      const mercado = jogo?.bookmakers?.[0]?.markets?.[0];
+      if (!mercado || mercado.outcomes.length < 3) return;
+
+      let bloco = '';
+      let adicionou = false;
+
+      mercado.outcomes.forEach(outcome => {
+        if (outcome.price >= oddMin && outcome.price <= oddMax) {
+          adicionou = true;
+          const icon = outcome.name === jogo.home_team ? "🏠" : outcome.name === "Draw" ? "⚖️" : "🚩";
+          bloco += `
+            <div class="game-option">
+              <input type="checkbox" class="jogoCheck"
+                     data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}"
+                     data-odd="${outcome.price.toFixed(2)}" />
+              <span class="icon">${icon}</span> ${outcome.name} @ ${outcome.price.toFixed(2)}
+            </div>`;
+        }
+      });
+
+      if (adicionou) {
+        jogoCount++;
+        inputs.innerHTML += `
+          <div class="game-card" data-times="${jogo.home_team.toLowerCase()} ${jogo.away_team.toLowerCase()}" data-competicao="${jogo.commence_time}">
+            <div class="game-title">${jogo.home_team} vs ${jogo.away_team}</div>
+            ${bloco}
+          </div>`;
+      }
+    });
+
+    if (jogoCount === 0) {
+      inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada no intervalo definido.</p>";
+    } else {
+      alert("Selecione os resultados desejados para apostar.");
+    }
+
+  } catch (err) {
+    console.error("Erro ao buscar odds reais:", err);
+    alert("Erro ao buscar odds. Tente novamente mais tarde.");
+  }
+}
+
+function selecionarTodos() {
+  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = true);
+}
+
+function limparSelecao() {
+  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = false);
+}
+
+function baixarTXT() {
+  let texto = document.getElementById("resultado").innerText;
+  let blob = new Blob([texto], { type: "text/plain" });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "bilhetes.txt";
+  link.click();
+}
+
+function baixarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let texto = document.getElementById("resultado").innerText.split("\n");
+  let y = 10;
+  texto.forEach(linha => {
+    if (y > 280) { doc.addPage(); y = 10; }
+    doc.text(linha, 10, y);
+    y += 7;
+  });
+  doc.save("bilhetes.pdf");
+}
+
+function montarMelhorCombo() {
+  const checkboxes = Array.from(document.querySelectorAll(".jogoCheck"));
+  const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
+  const stake = parseFloat(document.getElementById("stake").value);
+  if (checkboxes.length < tipoDesdobramento) {
+    alert("Não há jogos suficientes selecionáveis para esse combo.");
+    return;
+  }
+  const jogos = checkboxes.map(cb => ({
+    jogo: cb.dataset.nome,
+    odd: parseFloat(cb.dataset.odd)
+  }));
+
+  const melhores = jogos.sort((a, b) => b.odd - a.odd).slice(0, tipoDesdobramento);
+  gerarDesdobramento([melhores]);
+}
+
+document.getElementById("filtro").addEventListener("input", function () {
+  const termo = this.value.toLowerCase();
+  document.querySelectorAll(".game-card").forEach(card => {
+    card.style.display = card.dataset.times.includes(termo) ? "block" : "none";
+  });
+});
+
+document.getElementById("filtroCompeticao").addEventListener("input", function () {
+  const termo = this.value.toLowerCase();
+  document.querySelectorAll(".game-card").forEach(card => {
+    card.style.display = card.dataset.competicao.includes(termo) ? "block" : "none";
+  });
+});
 </script>
 </body>
 </html>
