@@ -103,7 +103,7 @@
   <label for="tipoAposta">Modo de aposta:</label>
   <select id="tipoAposta">
     <option value="simples">Simples (1X2)</option>
-    <option value="outros">Outro Mercado (totals, btts, double_chance)</option>
+    <option value="outros">Outro Mercado (totals, correct_score)</option>
     <option value="placar">Placar Exato</option>
     <option value="btts">Ambas Marcam (BTTS)</option>
     <option value="over25">Mais de 2.5 Gols</option>
@@ -222,7 +222,7 @@ function gerarDesdobramento(combinacoesPersonalizadas = null) {
 
 
 async function carregarOddsReais() {
-  const API_KEY = "16ada9b33fb51ce54cec50790f0c0ff0";
+  const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
   const liga = document.getElementById("liga").value;
   const tipoAposta = document.getElementById("tipoAposta").value;
   const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
@@ -238,13 +238,15 @@ async function carregarOddsReais() {
 
   
   if (tipoAposta === "outros") {
-    const allMarkets = "totals,btts,double_chance";
-    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${allMarkets}&oddsFormat=decimal&apiKey=${API_KEY}`;
+    const allMarkets = "totals,correct_score";
+    const region = "eu";
+    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=${region}&markets=${allMarkets}&oddsFormat=decimal&apiKey=${API_KEY}`;
 
     try {
       const response = await fetch(marketsUrl);
       if (!response.ok) {
         console.error("Código de erro HTTP:", response.status);
+        console.error("URL requisitada:", marketsUrl);
         throw new Error("Erro na resposta da API");
       }
 
@@ -283,7 +285,7 @@ async function carregarOddsReais() {
       });
 
       if (count === 0) {
-        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos outros mercados disponíveis.</p>";
+        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos mercados suportados.</p>";
       } else {
         alert("Selecione os mercados desejados.");
       }
@@ -291,7 +293,7 @@ async function carregarOddsReais() {
       return;
     } catch (err) {
       console.error("Erro ao buscar mercados (detalhes):", err);
-      alert("Erro ao buscar mercados. Verifique a chave da API ou tente novamente mais tarde.");
+      alert("Erro ao buscar mercados. Verifique sua chave da API ou tente mais tarde.");
       return;
     }
   }
