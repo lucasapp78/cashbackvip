@@ -102,6 +102,8 @@
 
   <label for="tipoAposta">Modo de aposta:</label>
   <select id="tipoAposta">
+  <option value="simples">Simples (1X2)</option>
+  <option value="outros">Outro Mercado (todos os tipos)</option>
     <option value="simples">Simples (1X2)</option>
     <option value="placar">Placar Exato</option>
     <option value="btts">Ambas Marcam (BTTS)</option>
@@ -221,7 +223,7 @@ function gerarDesdobramento(combinacoesPersonalizadas = null) {
 
 
 async function carregarOddsReais() {
-  const API_KEY = "16ada9b33fb51ce54cec50790f0c0ff0";
+  const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
   const liga = document.getElementById("liga").value;
   const tipoAposta = document.getElementById("tipoAposta").value;
   const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
@@ -235,6 +237,62 @@ async function carregarOddsReais() {
   else if (tipoAposta === "dupla") market = "double_chance";
   else if (tipoAposta === "resultado_gols") market = "match_winner_and_totals";
 
+  
+  if (tipoAposta === "outros") {
+    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&oddsFormat=decimal&apiKey=${API_KEY}`;
+
+    try {
+      const response = await fetch(marketsUrl);
+      if (!response.ok) throw new Error("Erro na resposta da API");
+
+      const data = await response.json();
+      inputs.innerHTML = "";
+      let count = 0;
+
+      data.forEach(jogo => {
+        if (!jogo.bookmakers || jogo.bookmakers.length === 0) return;
+
+        let bloco = '';
+        jogo.bookmakers.forEach(bookmaker => {
+          bookmaker.markets.forEach(market => {
+            if (market.key === "h2h") return;
+
+            market.outcomes.forEach(outcome => {
+              if (outcome.price >= oddMin && outcome.price <= oddMax) {
+                bloco += `<div class="game-option">
+                  <input type="checkbox" class="jogoCheck"
+                         data-nome="${jogo.home_team} vs ${jogo.away_team} - ${market.key} - ${outcome.name}"
+                         data-odd="${outcome.price.toFixed(2)}" />
+                  <span class="icon">🎯</span> ${market.key.toUpperCase()} - ${outcome.name} @ ${outcome.price.toFixed(2)}
+                </div>`;
+              }
+            });
+          });
+        });
+
+        if (bloco !== '') {
+          count++;
+          inputs.innerHTML += `<div class="game-card" data-times="${jogo.home_team.toLowerCase()} ${jogo.away_team.toLowerCase()}" data-competicao="${jogo.commence_time}">
+            <div class="game-title">${jogo.home_team} vs ${jogo.away_team}</div>
+            ${bloco}
+          </div>`;
+        }
+      });
+
+      if (count === 0) {
+        inputs.innerHTML += "<p style='color:red;'>Nenhuma odd encontrada nos outros mercados.</p>";
+      } else {
+        alert("Selecione os mercados desejados.");
+      }
+
+      return;
+    } catch (err) {
+      console.error("Erro ao buscar odds:", err);
+      alert("Erro ao buscar mercados. Tente novamente mais tarde.");
+      return;
+    }
+  }
+    
   const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${market}&oddsFormat=decimal&apiKey=${API_KEY}`;
 
   try {
