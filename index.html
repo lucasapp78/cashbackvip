@@ -102,9 +102,8 @@
 
   <label for="tipoAposta">Modo de aposta:</label>
   <select id="tipoAposta">
-  <option value="simples">Simples (1X2)</option>
-  <option value="outros">Outro Mercado (todos os tipos)</option>
     <option value="simples">Simples (1X2)</option>
+    <option value="outros">Outro Mercado (todos os tipos)</option>
     <option value="placar">Placar Exato</option>
     <option value="btts">Ambas Marcam (BTTS)</option>
     <option value="over25">Mais de 2.5 Gols</option>
@@ -239,7 +238,8 @@ async function carregarOddsReais() {
 
   
   if (tipoAposta === "outros") {
-    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&oddsFormat=decimal&apiKey=${API_KEY}`;
+    const allMarkets = "totals,btts,correct_score,double_chance,match_winner_and_totals";
+    const marketsUrl = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${allMarkets}&oddsFormat=decimal&apiKey=${API_KEY}`;
 
     try {
       const response = await fetch(marketsUrl);
