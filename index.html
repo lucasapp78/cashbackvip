@@ -50,27 +50,13 @@
       padding: 15px; margin-bottom: 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    .combo-card h4 {
-      margin: 0 0 8px 0; color: #007BFF; font-size: 1.1rem;
-    }
-    .combo-card p {
-      margin: 4px 0; font-size: 1rem; line-height: 1.4;
-    }
-    .combo-retorno {
-      font-weight: bold; color: green; margin-top: 8px;
-    }
+    .combo-card h4 { margin: 0 0 8px 0; color: #007BFF; font-size: 1.1rem; }
+    .combo-card p { margin: 4px 0; font-size: 1rem; line-height: 1.4; }
+    .combo-retorno { font-weight: bold; color: green; margin-top: 8px; }
   </style>
 </head>
 <body>
   <h2>L.A Cashback VIP 👑</h2>
-
-  <label for="liga">Campeonato:</label>
-  <select id="liga">
-    <option value="soccer_brazil_campeonato">Brasileirão</option>
-    <option value="soccer_epl">Premier League</option>
-    <option value="soccer_spain_la_liga">La Liga</option>
-    <option value="soccer_uefa_champs_league">Champions League</option>
-  </select>
 
   <div style="display: flex; gap: 10px;">
     <div style="flex:1">
@@ -83,7 +69,7 @@
     </div>
   </div>
 
-  <button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
+  <button onclick="carregarOddsReais()">🔄 Carregar Odds de Hoje</button>
 
   <input type="text" id="filtro" class="search-bar" placeholder="Filtrar por nome do time...">
 
@@ -179,7 +165,7 @@ async function carregarOddsReais() {
     if (!response.ok) throw new Error(`Erro na resposta da API: ${response.status}`);
 
     const data = await response.json();
-    const hoje = new Date().toISOString().split("T")[0]; // ex: "2025-05-19"
+    const hoje = new Date().toISOString().split("T")[0];
     const jogosHoje = data.filter(jogo => jogo.commence_time.startsWith(hoje));
 
     const inputs = document.getElementById("inputs");
@@ -254,6 +240,20 @@ async function carregarOddsReais() {
   }
 }
 
+function selecionarTodos() {
+  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = true);
+}
+
+function limparSelecao() {
+  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = false);
+}
+
+document.getElementById("filtro").addEventListener("input", function () {
+  const termo = this.value.toLowerCase();
+  document.querySelectorAll(".game-card").forEach(card => {
+    card.style.display = card.dataset.times.includes(termo) ? "block" : "none";
+  });
+});
 </script>
 </body>
 </html>
