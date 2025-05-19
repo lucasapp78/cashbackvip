@@ -4,169 +4,82 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>L.A Cashback VIP 👑</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; margin: 0; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
     h2 { text-align: center; color: #333; }
-    label, select, input {
-      display: block; width: 100%; margin-bottom: 12px;
-      font-size: 1rem; padding: 10px; border-radius: 5px;
-      border: 1px solid #ccc; box-sizing: border-box;
-    }
-    button {
-      width: 100%; padding: 14px; background-color: #007BFF;
-      color: white; font-size: 1.1rem; border: none;
-      border-radius: 8px; margin-top: 10px; cursor: pointer;
-    }
-    button:hover { background-color: #0056b3; }
     .game-card {
       background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       padding: 15px; margin-bottom: 15px;
     }
-    .game-title {
-      font-weight: bold; margin-bottom: 6px;
-    }
+    .game-title { font-weight: bold; margin-bottom: 6px; }
     .game-option {
       margin-bottom: 6px; display: flex; align-items: center;
     }
     .game-option input { margin-right: 8px; }
-    .search-bar {
-      margin-bottom: 15px; padding: 10px; font-size: 1rem;
-      border-radius: 5px; border: 1px solid #ccc; width: 100%;
-      box-sizing: border-box;
-    }
-    .button-group {
-      display: flex; gap: 10px; margin-bottom: 10px;
-    }
-    .combo-card {
-      background: #fff; color: #000;
-      border-radius: 12px; padding: 15px; margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .combo-card h4 { margin: 0 0 8px 0; color: #007BFF; font-size: 1.1rem; }
-    .combo-card p { margin: 4px 0; font-size: 1rem; line-height: 1.4; }
-    .combo-retorno { font-weight: bold; color: green; margin-top: 8px; }
   </style>
 </head>
 <body>
-<h2>L.A Cashback VIP 👑</h2>
+  <h2>L.A Cashback VIP 👑</h2>
 
-<label for="liga">Escolha a Liga:</label>
-<select id="liga">
-  <option value="soccer_brazil_campeonato">Brasileirão</option>
-  <option value="soccer_epl">Premier League</option>
-  <option value="soccer_uefa_champs_league">Champions League</option>
-  <option value="soccer_copa_libertadores">Libertadores</option>
-</select>
+  <button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
 
-<label for="tipoAposta">Modo de aposta:</label>
-<select id="tipoAposta">
-  <option value="simples">Simples (1X2)</option>
-  <option value="btts">Ambas Marcam (BTTS)</option>
-  <option value="over25">Mais de 2.5 Gols</option>
-  <option value="under25">Menos de 2.5 Gols</option>
-  <option value="placar">Placar Exato</option>
-  <option value="dupla">Dupla Chance</option>
-  <option value="resultado_gols">Resultado + Gols</option>
-  <option value="outros">Outro Mercado</option>
-</select>
+  <div id="inputs" style="margin-top: 20px;"></div>
 
-<div style="display: flex; gap: 10px;">
-  <div style="flex:1">
-    <label for="oddMin">Odd mínima:</label>
-    <input id="oddMin" step="0.01" type="number" value="1.10"/>
-  </div>
-  <div style="flex:1">
-    <label for="oddMax">Odd máxima:</label>
-    <input id="oddMax" step="0.01" type="number" value="10.00"/>
-  </div>
-</div>
+  <script>
+  async function carregarOddsReais() {
+    // 🔑 Cole sua chave da API-Football aqui
+    const API_KEY = "69b92fb729838ba69139a6d92c457f83";
 
-<button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
-<input class="search-bar" id="filtro" placeholder="Filtrar por nome do time..." type="text"/>
-<input class="search-bar" id="filtroCompeticao" placeholder="Filtrar por competição ou data..." type="text"/>
+    const response = await fetch("https://v3.football.api-sports.io/odds?league=71&season=2024&bookmaker=1", {
+      headers: {
+        "x-apisports-key": API_KEY
+      }
+    });
 
-<div class="button-group">
-  <button onclick="selecionarTodos()">Selecionar Todos</button>
-  <button onclick="limparSelecao()">Limpar Seleção</button>
-  <button onclick="montarMelhorCombo()">🎯 Melhor Combo</button>
-</div>
+    const data = await response.json();
+    console.log("Resposta da API:", data);
 
-<div id="inputs"></div>
+    const container = document.getElementById("inputs");
+    container.innerHTML = "";
 
-<label for="tipoDesdobramento">Tipo de aposta (acertos):</label>
-<select id="tipoDesdobramento">
-  <option value="1">1 (simples)</option><option value="2">2 (duplas)</option>
-  <option value="3">3 (trios)</option><option value="4">4 (quartetos)</option>
-  <option value="5">5 (quinas)</option><option value="6">6 (senas)</option>
-  <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
-</select>
-
-<input id="stake" placeholder="Valor por combinação (R$)" step="0.01" type="number" value="10">
-<button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
-
-<div class="button-group">
-  <button onclick="baixarTXT()">📄 Baixar .txt</button>
-  <button onclick="baixarPDF()">📥 Baixar PDF</button>
-</div>
-
-<div id="resultado"></div>
-
-<script>
-async function carregarOddsReais() {
-  const API_KEY = "69b92fb729838ba69139a6d92c457f83"; // chave demo (limitada)
-
-  const response = await fetch("https://v3.football.api-sports.io/odds?league=71&season=2024&bookmaker=1", {
-    headers: {
-      "x-apisports-key": API_KEY
+    if (!data.response || data.response.length === 0) {
+      container.innerHTML = "<p>Nenhuma odd foi encontrada para essa liga.</p>";
+      return;
     }
-  });
 
-  const data = await response.json();
-  console.log("Resposta da API:", data);
+    const jogos = data.response;
 
-  const container = document.getElementById("inputs");
-  container.innerHTML = "";
+    jogos.forEach(entry => {
+      const partida = entry.fixture;
+      const times = `${entry.teams.home.name} vs ${entry.teams.away.name}`;
+      const horario = new Date(partida.date).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
+      });
 
-  if (!data.response || data.response.length === 0) {
-    container.innerHTML = "<p>Nenhuma odd foi encontrada para essa liga.</p>";
-    return;
+      const mercado = entry.bookmakers?.[0]?.bets?.find(b => b.name === "Match Winner");
+      if (!mercado) return;
+
+      mercado.values.forEach(opt => {
+        const odd = parseFloat(opt.odd);
+        const id = `jogo_${partida.id}_${opt.value}`;
+        const label = `${times} - ${opt.value}`;
+
+        const card = document.createElement("div");
+        card.className = "game-card";
+
+        card.innerHTML = `
+          <div class="game-title">${times}</div>
+          <div style="font-size: 0.9rem; color: #555;">📅 ${horario}</div>
+          <div class="game-option">
+            <input type="checkbox" class="jogoCheck" data-nome="${label}" data-odd="${odd}" id="${id}">
+            <label for="${id}">${opt.value} - <strong>Odd:</strong> ${odd}</label>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    });
   }
-
-  const jogos = data.response;
-
-  jogos.forEach(entry => {
-    const partida = entry.fixture;
-    const times = `${entry.teams.home.name} vs ${entry.teams.away.name}`;
-    const horario = new Date(partida.date).toLocaleString("pt-BR", {
-      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
-    });
-
-    const mercado = entry.bookmakers?.[0]?.bets?.find(b => b.name === "Match Winner");
-    if (!mercado) return;
-
-    mercado.values.forEach(opt => {
-      const odd = parseFloat(opt.odd);
-      const id = `jogo_${partida.id}_${opt.value}`;
-      const label = `${times} - ${opt.value}`;
-
-      const card = document.createElement("div");
-      card.className = "game-card";
-
-      card.innerHTML = `
-        <div class="game-title">${times}</div>
-        <div style="font-size: 0.9rem; color: #555;">📅 ${horario}</div>
-        <div class="game-option">
-          <input type="checkbox" class="jogoCheck" data-nome="${label}" data-odd="${odd}" id="${id}">
-          <label for="${id}">${opt.value} - <strong>Odd:</strong> ${odd}</label>
-        </div>
-      `;
-
-      container.appendChild(card);
-    });
-  });
-}
-</script>
-
+  </script>
 </body>
 </html>
