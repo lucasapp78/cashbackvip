@@ -155,7 +155,7 @@ function gerarDesdobramento() {
 
 async function carregarOddsReais() {
   const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
-  const mercados = ["h2h", "btts", "totals", "correct_score"];
+  const mercados = ["h2h", "totals"];
   const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=${mercados.join(',')}&oddsFormat=decimal&apiKey=${API_KEY}`;
   const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
   const oddMax = parseFloat(document.getElementById("oddMax").value) || 10.00;
