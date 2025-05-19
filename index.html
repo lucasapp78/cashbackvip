@@ -149,125 +149,124 @@
 
   <div id="resultado"></div>
 
-  <script>
-    async function carregarOddsReais() {
-      const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
-      const liga = document.getElementById("liga").value;
-      const mercado = document.getElementById("mercado").value;
-      const oddMin = parseFloat(document.getElementById("oddMin").value);
-      const oddMax = parseFloat(document.getElementById("oddMax").value);
+<script>
+  async function carregarOddsReais() {
+    const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
+    const liga = document.getElementById("liga").value;
+    const mercado = document.getElementById("mercado").value;
+    const oddMin = parseFloat(document.getElementById("oddMin").value);
+    const oddMax = parseFloat(document.getElementById("oddMax").value);
+    const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${mercado}&oddsFormat=decimal&apiKey=${API_KEY}`;
 
-      const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${mercado}&oddsFormat=decimal&apiKey=${API_KEY}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const inputs = document.getElementById("inputs");
+      inputs.innerHTML = "";
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const inputs = document.getElementById("inputs");
-        inputs.innerHTML = "";
+      data.forEach(jogo => {
+        const mercadoData = jogo?.bookmakers?.[0]?.markets?.[0];
+        if (!mercadoData || !mercadoData.outcomes) return;
 
-        data.forEach(jogo => {
-          const mercadoData = jogo?.bookmakers?.[0]?.markets?.[0];
-          if (!mercadoData || !mercadoData.outcomes) return;
-
-          let oddsHTML = "";
-          mercadoData.outcomes.forEach(outcome => {
-            if (outcome.price >= oddMin && outcome.price <= oddMax) {
-              oddsHTML += `
-                <label>
-                  <input type="checkbox" class="jogoCheck" data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}" data-odd="${outcome.price.toFixed(2)}" />
-                  <span>${outcome.price.toFixed(2)}</span>
-                </label>`;
-            }
-          });
-
-          if (oddsHTML) {
-            const dataHora = new Date(jogo.commence_time);
-            const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
-            const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-            const nomeLiga = liga.replace("soccer_", "").replaceAll("_", " ").toUpperCase();
-
-            inputs.innerHTML += `
-              <div class="jogo-card">
-                <div class="jogo-header">${nomeLiga}</div>
-                <div class="jogo-conteudo">
-                  <div class="jogo-info">
-                    <div class="jogo-data">${dataStr}</div>
-                    <div class="jogo-hora">${horaStr}</div>
-                  </div>
-                  <div class="jogo-times">
-                    <div class="time-nome">⚽ ${jogo.home_team}</div>
-                    <div class="time-nome">🟢 ${jogo.away_team}</div>
-                  </div>
-                  <div class="jogo-odds">${oddsHTML}</div>
-                </div>
-              </div>`;
+        let oddsHTML = "";
+        mercadoData.outcomes.forEach(outcome => {
+          if (outcome.price >= oddMin && outcome.price <= oddMax) {
+            oddsHTML += `
+              <label>
+                <input type="checkbox" class="jogoCheck" data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}" data-odd="${outcome.price.toFixed(2)}" />
+                <span>${outcome.price.toFixed(2)}</span>
+              </label>`;
           }
         });
-      } catch (e) {
-        alert("Erro ao carregar dados.");
-        console.error(e);
-      }
-    }
 
-    function gerarCombinacoes(array, k) {
-      let res = [];
-      function comb(start, combo) {
-        if (combo.length === k) return res.push(combo);
-        for (let i = start; i < array.length; i++) {
-          comb(i + 1, combo.concat([array[i]]));
+        if (oddsHTML) {
+          const dataHora = new Date(jogo.commence_time);
+          const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
+          const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+          const nomeLiga = liga.replace("soccer_", "").replaceAll("_", " ").toUpperCase();
+
+          inputs.innerHTML += `
+            <div class="jogo-card">
+              <div class="jogo-header">${nomeLiga}</div>
+              <div class="jogo-conteudo">
+                <div class="jogo-info">
+                  <div class="jogo-data">${dataStr}</div>
+                  <div class="jogo-hora">${horaStr}</div>
+                </div>
+                <div class="jogo-times">
+                  <div class="time-nome">⚽ ${jogo.home_team}</div>
+                  <div class="time-nome">🟢 ${jogo.away_team}</div>
+                </div>
+                <div class="jogo-odds">${oddsHTML}</div>
+              </div>
+            </div>`;
         }
-      }
-      comb(0, []);
-      return res;
-    }
-
-    function gerarDesdobramento() {
-      const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
-      const stake = parseFloat(document.getElementById("stake").value);
-      const checkboxes = document.querySelectorAll(".jogoCheck:checked");
-
-      if (checkboxes.length < tipoDesdobramento) {
-        alert(`Você selecionou apenas ${checkboxes.length} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
-        return;
-      }
-
-      if (isNaN(stake) || stake <= 0) {
-        alert("Insira valor de aposta válido.");
-        return;
-      }
-
-      const jogos = Array.from(checkboxes).map(cb => ({
-        jogo: cb.dataset.nome,
-        odd: parseFloat(cb.dataset.odd)
-      }));
-
-      const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
-      let html = `<h3>Combinações ${tipoDesdobramento}</h3>`;
-      let totalRetorno = 0;
-
-      combinacoes.forEach((combo, i) => {
-        const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
-        const retorno = stake * oddTotal;
-        totalRetorno += retorno;
-
-        const selecoes = combo.map(j => `- ${j.jogo} (${j.odd.toFixed(2)})`).join("<br>");
-
-        html += `
-          <div class="combo-card">
-            <h4>Bilhete ${i + 1} - Odd Total: ${oddTotal.toFixed(2)}</h4>
-            <p>${selecoes}</p>
-            <div class="combo-retorno">Retorno: R$ ${retorno.toFixed(2)}</div>
-          </div>`;
       });
-
-      const totalApostado = (combinacoes.length * stake).toFixed(2);
-      html += `
-        <p><strong>Total de combinações:</strong> ${combinacoes.length}</p>
-        <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
-        <p style="color:green;"><strong>Retorno estimado se acertar todos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
-
-      document.getElementById("resultado").innerHTML = html;
+    } catch (e) {
+      alert("Erro ao carregar dados.");
+      console.error(e);
     }
-  </script>
+  }
+
+  function gerarCombinacoes(array, k) {
+    let res = [];
+    function comb(start, combo) {
+      if (combo.length === k) return res.push(combo);
+      for (let i = start; i < array.length; i++) {
+        comb(i + 1, combo.concat([array[i]]));
+      }
+    }
+    comb(0, []);
+    return res;
+  }
+
+  function gerarDesdobramento() {
+    const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
+    const stake = parseFloat(document.getElementById("stake").value);
+    const checkboxes = document.querySelectorAll(".jogoCheck:checked");
+
+    if (checkboxes.length < tipoDesdobramento) {
+      alert(`Você selecionou apenas ${checkboxes.length} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
+      return;
+    }
+
+    if (isNaN(stake) || stake <= 0) {
+      alert("Insira valor de aposta válido.");
+      return;
+    }
+
+    const jogos = Array.from(checkboxes).map(cb => ({
+      jogo: cb.dataset.nome,
+      odd: parseFloat(cb.dataset.odd)
+    }));
+
+    const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
+    let html = `<h3>Combinações ${tipoDesdobramento} (Simples 1X2)</h3>`;
+    let totalRetorno = 0;
+
+    combinacoes.forEach((combo, i) => {
+      const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
+      const retorno = stake * oddTotal;
+      totalRetorno += retorno;
+
+      const selecoes = combo.map(j => `- ${j.jogo.split(" - ")[1]} (${j.odd.toFixed(2)})`).join("<br>");
+
+      html += `
+        <div style="background:#fff;border-radius:10px;padding:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+          <div style="color:#007BFF;font-weight:bold;font-size:1rem;">Bilhete ${i + 1} - Odd Total: ${oddTotal.toFixed(2)}</div>
+          <div style="margin:6px 0 8px 0;font-size:0.95rem;line-height:1.4;">${selecoes}</div>
+          <div style="color:green;font-weight:bold;font-size:0.95rem;">Retorno: R$ ${retorno.toFixed(2)}</div>
+        </div>`;
+    });
+
+    const totalApostado = (combinacoes.length * stake).toFixed(2);
+    html += `
+      <p><strong>Total de combinações:</strong> ${combinacoes.length}</p>
+      <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
+      <p style="color:green;"><strong>Retorno estimado se acertar todos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
+
+    document.getElementById("resultado").innerHTML = html;
+  }
+</script>
 </body>
 </html>
