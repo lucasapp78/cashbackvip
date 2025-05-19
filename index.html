@@ -1,271 +1,44 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>L.A Cashback VIP 👑</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; margin: 0; }
-    h2 { text-align: center; color: #333; }
-    label, select, input {
-      display: block; width: 100%; margin-bottom: 12px;
-      font-size: 1rem; padding: 10px; border-radius: 5px;
-      border: 1px solid #ccc; box-sizing: border-box;
-    }
-    button {
-      width: 100%; padding: 14px; background-color: #007BFF;
-      color: white; font-size: 1.1rem; border: none;
-      border-radius: 8px; margin-top: 10px; cursor: pointer;
-    }
-    button:hover { background-color: #0056b3; }
-    .game-card {
-      background: #ffffff; border-left: 5px solid #007BFF;
-      border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      padding: 15px 20px; margin-bottom: 18px;
-      transition: transform 0.2s ease;
-    }
-    .game-card:hover { transform: scale(1.02); }
-    .game-title { font-weight: bold; font-size: 1.1rem; color: #222; margin-bottom: 5px; }
-    .game-option { margin-bottom: 6px; display: flex; align-items: center; }
-    .game-option input { margin-right: 8px; }
-    .icon { display: inline-block; width: 20px; text-align: center; margin-right: 6px; }
-    .search-bar {
-      margin-bottom: 15px; padding: 10px;
-      font-size: 1rem; border-radius: 5px;
-      border: 1px solid #ccc; width: 100%; box-sizing: border-box;
-    }
-    #resultado .result-card {
-      background: #ffffff; border-radius: 10px; padding: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;
-    }
-    #resultado h3 { margin-bottom: 10px; }
-    .result-table { width: 100%; border-collapse: collapse; }
-    .result-table th, .result-table td {
-      padding: 10px; border: 1px solid #ccc; text-align: left;
-    }
-    .result-table th { background: #f0f0f0; }
-    .button-group { display: flex; gap: 10px; margin-bottom: 10px; }
-    .combo-card {
-      background: #fff; color: #000; border-radius: 12px;
-      padding: 15px; margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .combo-card h4 {
-      margin: 0 0 8px 0; color: #007BFF; font-size: 1.1rem;
-    }
-    .combo-card p {
-      margin: 4px 0; font-size: 1rem; line-height: 1.4;
-    }
-    .combo-retorno {
-      font-weight: bold; color: green; margin-top: 8px;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Teste The Odds API</title>
 </head>
 <body>
-  <h2>L.A Cashback VIP 👑</h2>
+  <h2>Teste de conexão com a The Odds API</h2>
 
-  <label for="liga">Campeonato:</label>
-  <select id="liga">
+  <label for="apiKey">Sua API Key:</label>
+  <input type="text" id="apiKey" placeholder="Cole sua API Key aqui" style="width: 100%; padding: 8px;" />
+
+  <label for="liga">Liga para testar:</label>
+  <select id="liga" style="width: 100%; padding: 8px;">
     <option value="soccer_brazil_campeonato">Brasileirão</option>
     <option value="soccer_epl">Premier League</option>
     <option value="soccer_spain_la_liga">La Liga</option>
-    <option value="soccer_uefa_champs_league">Champions League</option>
   </select>
 
-  <div style="display: flex; gap: 10px;">
-    <div style="flex:1">
-      <label for="oddMin">Odd mínima:</label>
-      <input type="number" id="oddMin" step="0.01" value="1.10" />
-    </div>
-    <div style="flex:1">
-      <label for="oddMax">Odd máxima:</label>
-      <input type="number" id="oddMax" step="0.01" value="10.00" />
-    </div>
-  </div>
+  <button onclick="testarAPI()" style="margin-top: 10px; padding: 10px;">Testar conexão</button>
 
-  <button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
+  <pre id="resultado" style="background: #eee; padding: 15px; margin-top: 20px; white-space: pre-wrap;"></pre>
 
-  <input type="text" id="filtro" class="search-bar" placeholder="Filtrar por nome do time...">
+  <script>
+    async function testarAPI() {
+      const apiKey = document.getElementById("apiKey").value.trim();
+      const liga = document.getElementById("liga").value;
+      const url = `https://api.the-odds-api.com/v4/sports/${liga}?apiKey=${apiKey}`;
+      const resultado = document.getElementById("resultado");
 
-  <div class="button-group">
-    <button onclick="selecionarTodos()">Selecionar Todos</button>
-    <button onclick="limparSelecao()">Limpar Seleção</button>
-  </div>
+      resultado.textContent = "Carregando...";
 
-  <div id="inputs"></div>
-
-  <label for="tipoDesdobramento">Tipo de aposta (acertos):</label>
-  <select id="tipoDesdobramento">
-    <option value="1">1 (simples)</option><option value="2">2 (duplas)</option>
-    <option value="3">3 (trios)</option><option value="4">4 (quartetos)</option>
-    <option value="5">5 (quinas)</option><option value="6">6 (senas)</option>
-    <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
-  </select>
-
-  <input type="number" step="0.01" placeholder="Valor por combinação (R$)" id="stake" value="10" />
-  <button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
-  <div id="resultado"></div>
-
-<script>
-function gerarCombinacoes(array, k) {
-  let res = [];
-  function comb(start, combo) {
-    if (combo.length === k) return res.push(combo);
-    for (let i = start; i < array.length; i++) {
-      comb(i + 1, combo.concat([array[i]]));
-    }
-  }
-  comb(0, []);
-  return res;
-}
-
-function gerarDesdobramento() {
-  const tipoDesdobramento = parseInt(document.getElementById("tipoDesdobramento").value);
-  const stake = parseFloat(document.getElementById("stake").value);
-  const checkboxes = document.querySelectorAll(".jogoCheck:checked");
-
-  if (checkboxes.length < tipoDesdobramento) {
-    alert(`Você selecionou apenas ${checkboxes.length} jogos, mas escolheu um desdobramento de ${tipoDesdobramento}.`);
-    return;
-  }
-
-  if (isNaN(stake) || stake <= 0) {
-    alert("Insira valor de aposta válido.");
-    return;
-  }
-
-  const jogos = Array.from(checkboxes).map(cb => ({
-    jogo: cb.dataset.nome,
-    odd: parseFloat(cb.dataset.odd)
-  }));
-
-  const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
-  let html = `<h3>Combinações ${tipoDesdobramento}</h3>`;
-  let totalRetorno = 0;
-
-  combinacoes.forEach((combo, i) => {
-    const oddTotal = combo.reduce((acc, cur) => acc * cur.odd, 1);
-    const retorno = stake * oddTotal;
-    totalRetorno += retorno;
-
-    const selecoes = combo.map(j => `- ${j.jogo.split(" - ")[1]} (${j.odd.toFixed(2)})`).join("<br>");
-
-    html += `
-      <div class="combo-card">
-        <h4>Bilhete ${i + 1} - Odd Total: ${oddTotal.toFixed(2)}</h4>
-        <p>${selecoes}</p>
-        <div class="combo-retorno">Retorno: R$ ${retorno.toFixed(2)}</div>
-      </div>`;
-  });
-
-  const totalApostado = (combinacoes.length * stake).toFixed(2);
-  html += `
-    <p><strong>Total de combinações:</strong> ${combinacoes.length}</p>
-    <p><strong>Total Apostado:</strong> R$ ${totalApostado}</p>
-    <p style="color:green;"><strong>Retorno estimado se acertar todos:</strong> R$ ${totalRetorno.toFixed(2)}</p>`;
-
-  document.getElementById("resultado").innerHTML = html;
-}
-
-async function carregarOddsReais() {
-  const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
-  const liga = document.getElementById("liga")?.value || "soccer_brazil_campeonato";
-  const mercados = ["h2h", "btts", "totals", "correct_score"];
-  const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${mercados.join(',')}&oddsFormat=decimal&apiKey=${API_KEY}`;
-  const oddMin = parseFloat(document.getElementById("oddMin").value) || 1.10;
-  const oddMax = parseFloat(document.getElementById("oddMax").value) || 10.00;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Erro na resposta da API");
-
-    const data = await response.json();
-    const inputs = document.getElementById("inputs");
-    inputs.innerHTML = "";
-    let jogoCount = 0;
-
-    data.sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time));
-
-    data.forEach(jogo => {
-      const mercadosJogo = jogo?.bookmakers?.[0]?.markets || [];
-      let bloco = '';
-      let adicionou = false;
-
-      mercadosJogo.forEach(mercado => {
-        mercado.outcomes?.forEach(outcome => {
-          if (outcome.price >= oddMin && outcome.price <= oddMax) {
-            adicionou = true;
-            let icon = "🎯";
-            const nomeMercado = mercado.key.toLowerCase();
-
-            if (nomeMercado === "h2h") {
-              icon = outcome.name === jogo.home_team ? "🏠" :
-                     outcome.name === "Draw" ? "⚖️" :
-                     outcome.name === jogo.away_team ? "🚩" : "🎯";
-            } else if (nomeMercado === "btts") {
-              icon = outcome.name === "Yes" ? "✅" : outcome.name === "No" ? "❌" : "🎯";
-            } else if (nomeMercado === "totals") {
-              icon = outcome.name.includes("Over") ? "⬆️" : outcome.name.includes("Under") ? "⬇️" : "🎯";
-            } else if (nomeMercado === "correct_score") {
-              icon = "📊";
-            }
-
-            const nomeDescritivo = `${jogo.home_team} vs ${jogo.away_team} - ${mercado.key.toUpperCase()}: ${outcome.name}${outcome.point ? ` (${outcome.point})` : ``}`;
-
-            bloco += `
-              <div class="game-option">
-                <input type="checkbox" class="jogoCheck"
-                       data-nome="${nomeDescritivo}"
-                       data-odd="${outcome.price.toFixed(2)}" />
-                <span class="icon">${icon}</span> ${mercado.key.toUpperCase()} - ${outcome.name} @ ${outcome.price.toFixed(2)}
-              </div>`;
-          }
-        });
-      });
-
-      if (adicionou) {
-        jogoCount++;
-        const dataHora = new Date(jogo.commence_time);
-        const formatter = new Intl.DateTimeFormat("pt-BR", {
-          weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
-        });
-        const horario = formatter.format(dataHora).replace(",", " às");
-        const casa = jogo?.bookmakers?.[0]?.title || "Desconhecida";
-
-        inputs.innerHTML += `
-          <div class="game-card" data-times="${jogo.home_team.toLowerCase()} ${jogo.away_team.toLowerCase()}">
-            <div class="game-title">${jogo.home_team} vs ${jogo.away_team}</div>
-            <div style="font-size: 0.9rem; color: #555;">🕒 ${horario} | 🏦 ${casa}</div>
-            <div style="margin-top: 10px;">${bloco}</div>
-          </div>`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`);
+        const data = await res.json();
+        resultado.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultado.textContent = "Erro ao conectar com a API:\n" + err;
       }
-    });
-
-    if (jogoCount === 0) {
-      inputs.innerHTML = "<p style='color:red;'>Nenhuma odd encontrada no intervalo definido.</p>";
-    } else {
-      alert("Selecione os resultados desejados para apostar.");
     }
-  } catch (err) {
-    console.error("Erro ao buscar odds reais:", err);
-    alert("Erro ao buscar odds. Tente novamente mais tarde.");
-  }
-}
-
-function selecionarTodos() {
-  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = true);
-}
-
-function limparSelecao() {
-  document.querySelectorAll(".jogoCheck").forEach(cb => cb.checked = false);
-}
-
-document.getElementById("filtro").addEventListener("input", function () {
-  const termo = this.value.toLowerCase();
-  document.querySelectorAll(".game-card").forEach(card => {
-    card.style.display = card.dataset.times.includes(termo) ? "block" : "none";
-  });
-});
-</script>
+  </script>
 </body>
 </html>
