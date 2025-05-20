@@ -176,8 +176,7 @@
             let rotulo = mercado === "h2h" ? rotulos1x2[index] || outcome.name : outcome.name;
             oddsHTML += `
               <label>
-                <input type="checkbox" class="jogoCheck" data-nome="${rotulo === 'Casa' ? jogo.home_team : rotulo === 'Fora' ? jogo.away_team : 'Empate'} (${rotulo})"
-" />
+                <input type="checkbox" class="jogoCheck" data-nome="${rotulo === 'Casa' ? jogo.home_team : rotulo === 'Fora' ? jogo.away_team : 'Empate'} (${rotulo})" data-odd="${outcome.price.toFixed(2)}" />
                 <span><strong>${rotulo}:</strong> ${outcome.price.toFixed(2)}</span>
               </label>`;
           }
@@ -253,7 +252,7 @@
       const retorno = stake * oddTotal;
       totalRetorno += retorno;
 
-      const selecoes = combo.map(j => `- ${j.jogo.split(" - ")[1]} (${j.odd.toFixed(2)})`).join("<br>");
+      const selecoes = combo.map(j => `- ${j.jogo} (${j.odd.toFixed(2)})`).join("<br>");
 
       html += `
         <div style="background:#fff;border-radius:10px;padding:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
