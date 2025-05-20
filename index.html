@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -169,12 +170,14 @@
         if (!mercadoData || !mercadoData.outcomes) return;
 
         let oddsHTML = "";
-        mercadoData.outcomes.forEach(outcome => {
+        const rotulos1x2 = ["Casa", "Empate", "Fora"];
+        mercadoData.outcomes.forEach((outcome, index) => {
           if (outcome.price >= oddMin && outcome.price <= oddMax) {
+            let rotulo = mercado === "h2h" ? rotulos1x2[index] || outcome.name : outcome.name;
             oddsHTML += `
               <label>
-                <input type="checkbox" class="jogoCheck" data-nome="${jogo.home_team} vs ${jogo.away_team} - ${outcome.name}" data-odd="${outcome.price.toFixed(2)}" />
-                <span>${outcome.price.toFixed(2)}</span>
+                <input type="checkbox" class="jogoCheck" data-nome="${jogo.home_team} vs ${jogo.away_team} - ${rotulo}" data-odd="${outcome.price.toFixed(2)}" />
+                <span><strong>${rotulo}:</strong> ${outcome.price.toFixed(2)}</span>
               </label>`;
           }
         });
