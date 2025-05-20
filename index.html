@@ -176,7 +176,8 @@
             let rotulo = mercado === "h2h" ? rotulos1x2[index] || outcome.name : outcome.name;
             oddsHTML += `
               <label>
-                <input type="checkbox" class="jogoCheck" data-nome="${jogo.home_team} vs ${jogo.away_team} - ${rotulo}" data-odd="${outcome.price.toFixed(2)}" />
+                <input type="checkbox" class="jogoCheck" data-nome="${rotulo === 'Casa' ? jogo.home_team : rotulo === 'Fora' ? jogo.away_team : 'Empate'} (${rotulo})"
+" />
                 <span><strong>${rotulo}:</strong> ${outcome.price.toFixed(2)}</span>
               </label>`;
           }
