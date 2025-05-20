@@ -24,7 +24,7 @@
       font-size: 1rem;
       border-radius: 6px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
+      box-sizing: border-box;   
     }
     button {
       background-color: #007bff;
@@ -35,7 +35,6 @@
     button:hover {
       background-color: #0056b3;
     }
-
     .jogo-card {
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -43,7 +42,6 @@
       overflow: hidden;
       background: white;
     }
-
     .jogo-header {
       background-color: #0a2c5a;
       color: white;
@@ -51,57 +49,29 @@
       font-weight: bold;
       font-size: 0.95rem;
     }
-
     .jogo-conteudo {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: 12px;
-      flex-wrap: wrap;
     }
-
-    .jogo-info {
+    .jogo-info, .jogo-times {
       text-align: center;
-      font-size: 0.85rem;
-      color: #444;
-      width: 80px;
-    }
-
-    .jogo-data {
+      font-size: 0.95rem;
       font-weight: bold;
+      margin-bottom: 8px;
     }
-
-    .jogo-times {
-      flex: 1;
-      padding: 0 10px;
-    }
-
-    .time-nome {
-      margin: 4px 0;
-      font-weight: 600;
-    }
-
-    .jogo-odds {
-      display: flex;
-      gap: 10px;
-    }
-
     .jogo-odds label {
       background-color: #0a2c5a;
       color: white;
       padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: inline-block;
+      margin: 5px 5px 0 0;
     }
-
     .jogo-odds input {
       transform: scale(1.2);
+      margin-right: 6px;
     }
-
     #resultado {
       margin-top: 20px;
     }
@@ -113,17 +83,12 @@
   <label for="liga">Campeonato:</label>
   <select id="liga">
     <option value="soccer_brazil_campeonato">Brasileirão</option>
+    <option value="soccer_brazil_series_b">Série B</option>
+    <option value="soccer_brazil_copa_do_brasil">Copa do Brasil</option>
+    <option value="soccer_south_america_libertadores">Libertadores</option>
     <option value="soccer_epl">Premier League</option>
     <option value="soccer_spain_la_liga">La Liga</option>
     <option value="soccer_uefa_champs_league">Champions League</option>
-  </select>
-
-  <label for="mercado">Mercado:</label>
-  <select id="mercado">
-    <option value="h2h">1X2 (Resultado)</option>
-    <option value="btts">Ambas Marcam (BTTS)</option>
-    <option value="totals">Mais/Menos Gols (Over/Under)</option>
-    <option value="correct_score">Placar Exato</option>
   </select>
 
   <label for="oddMin">Odd mínima:</label>
@@ -147,6 +112,8 @@
 
   <input type="number" step="0.01" placeholder="Valor por combinação (R$)" id="stake" value="10" />
   <button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
+  <button onclick="exportarPDF()">📄 Exportar como PDF</button>
+  <button onclick="compartilharWhatsApp()">📤 Compartilhar no WhatsApp</button>
 
   <div id="resultado"></div>
 
@@ -154,10 +121,9 @@
   async function carregarOddsReais() {
     const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
     const liga = document.getElementById("liga").value;
-    const mercado = document.getElementById("mercado").value;
     const oddMin = parseFloat(document.getElementById("oddMin").value);
     const oddMax = parseFloat(document.getElementById("oddMax").value);
-    const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=${mercado}&oddsFormat=decimal&apiKey=${API_KEY}`;
+    const url = `https://api.the-odds-api.com/v4/sports/${liga}/odds/?regions=us&markets=h2h&oddsFormat=decimal&apiKey=${API_KEY}`;
 
     try {
       const res = await fetch(url);
@@ -166,48 +132,45 @@
       inputs.innerHTML = "";
 
       data.forEach(jogo => {
-        const mercadoData = jogo?.bookmakers?.[0]?.markets?.[0];
-        if (!mercadoData || !mercadoData.outcomes) return;
+        const bookmaker = jogo?.bookmakers?.[0];
+        if (!bookmaker || !bookmaker.markets) return;
 
-        let oddsHTML = "";
-        const rotulos1x2 = ["Casa", "Empate", "Fora"];
-        mercadoData.outcomes.forEach((outcome, index) => {
+        const mercado = bookmaker.markets.find(m => m.key === "h2h");
+        if (!mercado) return;
+
+        let oddsHTML = `<div style="margin-bottom: 10px;"><strong>Para Vencer:</strong><br>`;
+
+        mercado.outcomes.forEach(outcome => {
+          let nome = outcome.name;
+          if (nome.toLowerCase() === "draw") nome = "Empate";
+          if (nome.toLowerCase() === "home") nome = jogo.home_team;
+          if (nome.toLowerCase() === "away") nome = jogo.away_team;
+
           if (outcome.price >= oddMin && outcome.price <= oddMax) {
-            let rotulo = mercado === "h2h" ? rotulos1x2[index] || outcome.name : outcome.name;
             oddsHTML += `
               <label>
-                <input type="checkbox" class="jogoCheck" data-nome="${rotulo === 'Casa' ? jogo.home_team : rotulo === 'Fora' ? jogo.away_team : 'Empate'} (${rotulo})" data-odd="${outcome.price.toFixed(2)}" />
-                <span><strong>${rotulo}:</strong> ${outcome.price.toFixed(2)}</span>
+                <input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${outcome.price.toFixed(2)}" />
+                ${nome} - ${outcome.price.toFixed(2)}
               </label>`;
           }
         });
 
-        if (oddsHTML) {
-          const dataHora = new Date(jogo.commence_time);
-          const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
-          const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-          const nomeLiga = liga.replace("soccer_", "").replaceAll("_", " ").toUpperCase();
+        oddsHTML += `</div>`;
 
-          inputs.innerHTML += `
-            <div class="jogo-card">
-              <div class="jogo-header">${nomeLiga}</div>
-              <div class="jogo-conteudo">
-                <div class="jogo-info">
-                  <div class="jogo-data">${dataStr}</div>
-                  <div class="jogo-hora">${horaStr}</div>
-                </div>
-                <div class="jogo-times">
-                  <div class="time-nome">⚽ ${jogo.home_team}</div>
-                  <div class="time-nome">🟢 ${jogo.away_team}</div>
-                </div>
-                <div class="jogo-odds">${oddsHTML}</div>
-    <button onclick="mostrarOddsExtras('${jogo.id}')" style="margin-top: 10px; background: #007bff; color: white; padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-      +Mais Odds
-    </button>
-    <div id="extras-${jogo.id}" style="display:none; margin-top: 10px; padding:10px; background:#eef; border-radius:6px;"></div>
-              </div>
-            </div>`;
-        }
+        const dataHora = new Date(jogo.commence_time);
+        const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
+        const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+        const nomeLiga = liga.replace("soccer_", "").replaceAll("_", " ").toUpperCase();
+
+        inputs.innerHTML += `
+          <div class="jogo-card">
+            <div class="jogo-header">${nomeLiga}</div>
+            <div class="jogo-conteudo">
+              <div class="jogo-info">🗓️ ${dataStr} às ${horaStr}</div>
+              <div class="jogo-times">⚽ ${jogo.home_team} vs 🟢 ${jogo.away_team}</div>
+              <div class="jogo-odds">${oddsHTML}</div>
+            </div>
+          </div>`;
       });
     } catch (e) {
       alert("Erro ao carregar dados.");
@@ -248,7 +211,7 @@
     }));
 
     const combinacoes = gerarCombinacoes(jogos, tipoDesdobramento);
-    let html = `<h3>Combinações ${tipoDesdobramento} (Simples 1X2)</h3>`;
+    let html = `<h3>Combinações ${tipoDesdobramento}</h3>`;
     let totalRetorno = 0;
 
     combinacoes.forEach((combo, i) => {
@@ -256,7 +219,7 @@
       const retorno = stake * oddTotal;
       totalRetorno += retorno;
 
-      const selecoes = combo.map(j => `- ${j.jogo} (${j.odd.toFixed(2)})`).join("<br>");
+      const selecoes = combo.map(j => `- ${j.jogo}`).join("<br>");
 
       html += `
         <div style="background:#fff;border-radius:10px;padding:12px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
@@ -275,15 +238,55 @@
     document.getElementById("resultado").innerHTML = html;
   }
 
-  function mostrarOddsExtras(jogoId) {
-    const divExtras = document.getElementById(`extras-${jogoId}`);
-    if (divExtras.style.display === "none") {
-      divExtras.style.display = "block";
-      divExtras.innerHTML = "<em>Carregando odds extras...</em>";
-      // Aqui você pode adicionar lógica futura para buscar mais mercados da API
-    } else {
-      divExtras.style.display = "none";
+  function exportarPDF() {
+    const resultado = document.getElementById("resultado");
+    if (!resultado.innerHTML.trim()) {
+      alert("Gere os bilhetes antes de exportar.");
+      return;
     }
+
+    const janela = window.open('', '', 'width=800,height=600');
+    janela.document.write(`
+      <html>
+      <head>
+        <title>Bilhetes - L.A Cashback VIP 👑</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          .bilhete { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+          .titulo { font-weight: bold; color: #007bff; margin-bottom: 5px; }
+          .retorno { color: green; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h2>Bilhetes - L.A Cashback VIP 👑</h2>
+        ${resultado.innerHTML}
+      </body>
+      </html>
+    `);
+    janela.document.close();
+    janela.print();
+  }
+
+  function compartilharWhatsApp() {
+    const resultado = document.getElementById("resultado");
+    if (!resultado.innerHTML.trim()) {
+      alert("Gere os bilhetes antes de compartilhar.");
+      return;
+    }
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = resultado.innerHTML;
+    let texto = tempDiv.innerText;
+
+    texto = "🔥 *L.A Cashback VIP 👑* 🔥\n\n" + texto.trim();
+    texto = texto.replace(/Bilhete (\d+)/g, "🎟️ Bilhete $1");
+    texto = texto.replace(/Retorno: R\$/, "💰 Retorno: R$");
+    texto = texto.replace(/Total Apostado:/, "💸 Total Apostado:");
+    texto = texto.replace(/Total de combinações:/, "📦 Total de combinações:");
+    texto = texto.replace(/Retorno estimado se acertar todos:/, "🔮 Retorno máximo:");
+
+    const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(url, "_blank");
   }
 </script>
 
