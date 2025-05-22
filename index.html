@@ -63,10 +63,7 @@
     <option value="2">Champions League</option>
   </select>
 
-  <label for="oddMin">Odd mínima:</label>
-  <input type="number" id="oddMin" step="0.01" value="1.10">
-  <label for="oddMax">Odd máxima:</label>
-  <input type="number" id="oddMax" step="0.01" value="10.00">
+  
 
   <button onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
 
@@ -92,7 +89,7 @@
   <div style="background: #ffe600; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 16px;">
     🔥 Siga nosso parceiro no Instagram: 
     <a href="https://instagram.com/brasilleirou" target="_blank" style="color: #0a2c5a; text-decoration: none;">
-      @brasilleirou Segue
+      @brasilleirou Segue 1.0
     </a> 💥
   </div>
 
@@ -100,8 +97,6 @@
 async function carregarOddsReais() {
     const API_KEY = "69b92fb729838ba69139a6d92c457f83";
     const ligaID = document.getElementById("liga").value;
-    const oddMin = parseFloat(document.getElementById("oddMin").value);
-    const oddMax = parseFloat(document.getElementById("oddMax").value);
     const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2025&bookmaker=6`;
 
     const headers = {
@@ -125,22 +120,22 @@ async function carregarOddsReais() {
             const fixture = item.fixture;
             const teams = item.teams;
             const bookmaker = item.bookmakers?.[0];
-            const matchOdds = bookmaker?.bets?.find(bet => bet.name === "Match Winner")?.values;
+            const bets = bookmaker?.bets;
 
-            // Validar existência dos dados antes de continuar
-            if (!fixture || !teams || !teams.home || !teams.away || !Array.isArray(matchOdds)) return;
+            if (!fixture || !teams || !teams.home || !teams.away || !Array.isArray(bets)) return;
 
-            let oddsHTML = `<div style="margin-bottom: 10px;"><strong>Para Vencer:</strong><br>`;
-            matchOdds.forEach(odd => {
-                const nome = odd.value;
-                const valor = parseFloat(odd.odd);
-                if (valor >= oddMin && valor <= oddMax) {
-                    oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${nome} - ${valor.toFixed(2)}</label>`;
-                }
+            let oddsHTML = "";
+            bets.forEach(bet => {
+                oddsHTML += `<div style="margin-bottom: 12px;"><strong>${bet.name}</strong><br>`;
+                bet.values.forEach(odd => {
+                    const nome = `${bet.name}: ${odd.value}`;
+                    const valor = parseFloat(odd.odd);
+                    oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${odd.value} - ${valor.toFixed(2)}</label><br>`;
+                });
+                oddsHTML += `</div>`;
             });
-            oddsHTML += `</div>`;
 
-            if (oddsHTML.includes('input')) {  // Só exibir se houver odds válidas
+            if (oddsHTML.includes('input')) {
                 const dataHora = new Date(fixture.date);
                 const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
                 const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
@@ -158,7 +153,7 @@ async function carregarOddsReais() {
         });
 
         if (!inputs.innerHTML.trim()) {
-            inputs.innerHTML = "<p style='color: red; text-align: center;'>Nenhuma odd válida encontrada para os critérios definidos.</p>";
+            inputs.innerHTML = "<p style='color: red; text-align: center;'>Nenhuma odd encontrada para esta liga.</p>";
         }
 
     } catch (error) {
@@ -166,6 +161,7 @@ async function carregarOddsReais() {
         alert('Erro ao carregar odds. Veja o console para mais detalhes.');
     }
 }
+
 
 
 
