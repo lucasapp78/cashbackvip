@@ -6,74 +6,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>L.A Cashback VIP 👑</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
       padding: 20px;
       margin: 0;
+      color: #333;
     }
+
     h2 {
       text-align: center;
-      color: #222;
+      color: #0a2c5a;
+      margin-bottom: 20px;
     }
-    select, input, button {
+
+    select,
+    input,
+    button {
       display: block;
       width: 100%;
-      margin-bottom: 12px;
-      padding: 10px;
+      margin-bottom: 16px;
+      padding: 12px;
       font-size: 1rem;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box;   
+      transition: border 0.3s ease;
     }
+
+    select:focus,
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
     button {
       background-color: #007bff;
       color: white;
       font-weight: bold;
+      border: none;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
+
     button:hover {
       background-color: #0056b3;
     }
+
     .jogo-card {
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
       margin-bottom: 20px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       overflow: hidden;
-      background: white;
     }
+
     .jogo-header {
       background-color: #0a2c5a;
       color: white;
-      padding: 8px 12px;
+      padding: 10px 16px;
       font-weight: bold;
-      font-size: 0.95rem;
+      font-size: 1rem;
+      text-transform: uppercase;
     }
+
     .jogo-conteudo {
-      padding: 12px;
+      padding: 16px;
     }
-    .jogo-info, .jogo-times {
+
+    .jogo-info,
+    .jogo-times {
       text-align: center;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
+
     .jogo-odds label {
-      background-color: #0a2c5a;
-      color: white;
-      padding: 6px 12px;
+      background-color: #e6f0ff;
+      color: #0a2c5a;
+      padding: 8px 12px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       cursor: pointer;
       display: inline-block;
-      margin: 5px 5px 0 0;
+      margin: 6px 6px 0 0;
+      transition: background-color 0.3s;
     }
+
     .jogo-odds input {
-      transform: scale(1.2);
+      transform: scale(1.1);
       margin-right: 6px;
     }
+
     #resultado {
-      margin-top: 20px;
+      margin-top: 24px;
+    }
+
+    /* Responsivo */
+    @media (min-width: 768px) {
+      body {
+        max-width: 800px;
+        margin: auto;
+      }
+
+      .jogo-odds label {
+        font-size: 1rem;
+      }
+
+      select,
+      input,
+      button {
+        font-size: 1.05rem;
+      }
     }
   </style>
 </head>
@@ -83,9 +132,9 @@
   <label for="liga">Campeonato:</label>
   <select id="liga">
     <option value="soccer_brazil_campeonato">Brasileirão</option>
-    <option value="soccer_brazil_series_b">Série B</option>
+    <option value="soccer_brazil_serie_b">Série B</option>
     <option value="soccer_brazil_copa_do_brasil">Copa do Brasil</option>
-    <option value="soccer_south_america_libertadores">Libertadores</option>
+    <option value="soccer_conmebol_copa_libertadores">Libertadores</option>
     <option value="soccer_epl">Premier League</option>
     <option value="soccer_spain_la_liga">La Liga</option>
     <option value="soccer_uefa_champs_league">Champions League</option>
@@ -110,6 +159,10 @@
     <option value="6">6 (senas)</option>
   </select>
 
+    
+
+
+
   <input type="number" step="0.01" placeholder="Valor por combinação (R$)" id="stake" value="10" />
   <button onclick="gerarDesdobramento()">Gerar L.A Cashback VIP 👑</button>
   <button onclick="exportarPDF()">📄 Exportar como PDF</button>
@@ -117,7 +170,15 @@
 
   <div id="resultado"></div>
 
-<script>
+   <div style="background: #ffe600; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 16px;">
+  🔥 Siga nosso parceiro no Instagram tudo sobre o Brasileirão: 
+  <a href="https://instagram.com/brasilleirou" target="_blank" style="color: #0a2c5a; text-decoration: none;">
+    @brasilleirou
+  </a> 💥
+</div>
+
+
+ <script>
   async function carregarOddsReais() {
     const API_KEY = "d4d52d8e8d186ecee91808ff600dcd63";
     const liga = document.getElementById("liga").value;
@@ -284,6 +345,7 @@
     texto = texto.replace(/Total Apostado:/, "💸 Total Apostado:");
     texto = texto.replace(/Total de combinações:/, "📦 Total de combinações:");
     texto = texto.replace(/Retorno estimado se acertar todos:/, "🔮 Retorno máximo:");
+    texto += "\n\n🤝 Parceiro do app: Oferecimento 👉 @brasilleirou";
 
     const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
     window.open(url, "_blank");
