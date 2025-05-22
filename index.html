@@ -98,47 +98,59 @@
 
 <script>
 async function carregarOddsReais() {
-  const API_KEY = "69b92fb729838ba69139a6d92c457f83";
-  const ligaID = document.getElementById("liga").value;
-  const oddMin = parseFloat(document.getElementById("oddMin").value);
-  const oddMax = parseFloat(document.getElementById("oddMax").value);
-  const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2024&bookmaker=6`;
+    const API_KEY = "69b92fb729838ba69139a6d92c457f83";
+    const ligaID = document.getElementById("liga").value;
+    const oddMin = parseFloat(document.getElementById("oddMin").value);
+    const oddMax = parseFloat(document.getElementById("oddMax").value);
+    const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2024&bookmaker=6`;
 
-  try {
-    const res = await fetch(url, { headers: { "x-apisports-key": API_KEY } });
-    const json = await res.json();
-    const data = json.response;
+    const headers = {
+        "x-apisports-key": API_KEY,
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "Accept": "application/json"
+    };
 
-    const inputs = document.getElementById("inputs");
-    inputs.innerHTML = "";
-
-    data.forEach(item => {
-      const fixture = item.fixture;
-      const teams = item.teams;
-      const odds = item.bookmakers?.[0]?.bets?.find(bet => bet.name === "Match Winner")?.values;
-      if (!odds) return;
-
-      let oddsHTML = `<div style="margin-bottom: 10px;"><strong>Para Vencer:</strong><br>`;
-      odds.forEach(odd => {
-        const nome = odd.value;
-        const valor = parseFloat(odd.odd);
-        if (valor >= oddMin && valor <= oddMax) {
-          oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${nome} - ${valor.toFixed(2)}</label>`;
+    try {
+        const response = await fetch(url, { method: 'GET', headers: headers });
+        if (!response.ok) {
+            throw new Error('Erro na resposta da rede');
         }
-      });
-      oddsHTML += `</div>`;
+        const json = await response.json();
+        console.log("JSON recebido:", json);
 
-      const dataHora = new Date(fixture.date);
-      const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
-      const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+        const data = json.response;
+        const inputs = document.getElementById("inputs");
+        inputs.innerHTML = "";
 
-      inputs.innerHTML += `<div class="jogo-card"><div class="jogo-header">${ligaID}</div><div class="jogo-conteudo"><div class="jogo-info">🗓️ ${dataStr} às ${horaStr}</div><div class="jogo-times">⚽ ${teams.home.name} vs 🟢 ${teams.away.name}</div><div class="jogo-odds">${oddsHTML}</div></div></div>`;
-    });
-  } catch (e) {
-    alert("Erro ao carregar dados da API-FOOTBALL.");
-    console.error(e);
-  }
+        data.forEach(item => {
+            const fixture = item.fixture;
+            const teams = item.teams;
+            const odds = item.bookmakers?.[0]?.bets?.find(bet => bet.name === "Match Winner")?.values;
+            if (!odds) return;
+
+            let oddsHTML = `<div style="margin-bottom: 10px;"><strong>Para Vencer:</strong><br>`;
+            odds.forEach(odd => {
+                const nome = odd.value;
+                const valor = parseFloat(odd.odd);
+                if (valor >= oddMin && valor <= oddMax) {
+                    oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${nome} - ${valor.toFixed(2)}</label>`;
+                }
+            });
+            oddsHTML += `</div>`;
+
+            const dataHora = new Date(fixture.date);
+            const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
+            const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+
+            inputs.innerHTML += `<div class="jogo-card"><div class="jogo-header">${ligaID}</div><div class="jogo-conteudo"><div class="jogo-info">🗓️ ${dataStr} às ${horaStr}</div><div class="jogo-times">⚽ ${teams.home.name} vs 🟢 ${teams.away.name}</div><div class="jogo-odds">${oddsHTML}</div></div></div>`;
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar odds:', error);
+        alert('Erro ao carregar odds. Veja o console para mais detalhes.');
+    }
 }
+
 
 function gerarCombinacoes(array, k) {
   let res = [];
