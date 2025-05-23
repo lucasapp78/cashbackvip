@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -86,15 +87,52 @@
   <div style="background: #ffe600; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 16px;">
     🔥 Siga nosso parceiro no Instagram: 
     <a href="https://instagram.com/brasilleirou" target="_blank" style="color: #0a2c5a; text-decoration: none;">
-      @brasilleirou Segue 1.7
+      @brasilleirou Segue 10.2
     </a> 💥
   </div>
 
 <script>
+
+function traduzirValorOdd(valor) {
+    const traducoes = {
+        "Home": "Casa",
+        "Draw": "Empate",
+        "Away": "Visitante",
+        "Over 0.5": "Acima de 0.5",
+        "Over 1.5": "Acima de 1.5",
+        "Over 2.5": "Acima de 2.5",
+        "Over 3.5": "Acima de 3.5",
+        "Under 0.5": "Abaixo de 0.5",
+        "Under 1.5": "Abaixo de 1.5",
+        "Under 2.5": "Abaixo de 2.5",
+        "Under 3.5": "Abaixo de 3.5",
+        "Yes": "Sim",
+        "No": "Não"
+    };
+    return traducoes[valor] || valor;
+}
+
+
+function traduzirMercado(nomeOriginal) {
+    const traducoes = {
+        "Match Winner": "Resultado Final",
+        "Second Half Winner": "Resultado 2º Tempo",
+        "Asian Handicap": "Handicap Asiático",
+        "Over/Under 1.5 Goals": "Acima/Abaixo 1.5 Gols",
+        "Over/Under 2.5 Goals": "Acima/Abaixo 2.5 Gols",
+        "Both Teams to Score": "Ambas Marcam",
+        "Correct Score": "Placar Correto",
+        "Total Goals": "Total de Gols",
+        "First Half Winner": "Resultado 1º Tempo",
+        "Correct Score - First Half": "Placar correto  Primeiro tempo"
+    };
+    return traducoes[nomeOriginal] || nomeOriginal;
+}
+
 async function carregarOddsReais() {
     const API_KEY = "69b92fb729838ba69139a6d92c457f83";
     const ligaID = document.getElementById("liga").value;
-    const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2025&bookmaker=2`;
+    const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2025&bookmaker=32`;
 
     const headers = {
         "x-apisports-key": API_KEY,
@@ -134,11 +172,11 @@ async function carregarOddsReais() {
 
             let oddsHTML = "";
             bets.forEach(bet => {
-                oddsHTML += `<div style="margin-bottom: 12px;"><strong>${bet.name}</strong><br>`;
+                oddsHTML += `<div style="margin-bottom: 12px;"><strong>${traduzirMercado(bet.name)}</strong><br>`;
                 bet.values.forEach(odd => {
-                    const nome = `${bet.name}: ${odd.value}`;
+                    const nome = `${bet.name}: ${traduzirValorOdd(odd.value)}`;
                     const valor = parseFloat(odd.odd);
-                    oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${odd.value} - ${valor.toFixed(2)}</label><br>`;
+                    oddsHTML += `<label><input type="checkbox" class="jogoCheck" data-nome="${nome}" data-odd="${valor.toFixed(2)}" /> ${traduzirValorOdd(odd.value)} - ${valor.toFixed(2)}</label><br>`;
                 });
                 oddsHTML += `</div>`;
             });
