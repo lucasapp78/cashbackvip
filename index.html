@@ -92,8 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 <script>
-    const traducaoMercado = {'Match Winner': 'Resultado Final', 'Second Half Winner': 'Resultado 2º Tempo', 'Asian Handicap': 'Handicap Asiático', 'Over/Under 1.5 Goals': 'Acima/Abaixo 1.5 Gols', 'Over/Under 2.5 Goals': 'Acima/Abaixo 2.5 Gols', 'Both Teams to Score': 'Ambas Marcam', 'Correct Score': 'Placar Correto', 'Total Goals': 'Total de Gols', 'First Half Winner': 'Resultado 1º Tempo', 'Correct Score - First Half': 'Placar correto  Primeiro tempo'};
-    const traducaoValor = {'Home': 'Casa', 'Draw': 'Empate', 'Away': 'Visitante', 'Over 0.5': 'Acima de 0.5', 'Over 1.5': 'Acima de 1.5', 'Over 2.5': 'Acima de 2.5', 'Over 3.5': 'Acima de 3.5', 'Under 0.5': 'Abaixo de 0.5', 'Under 1.5': 'Abaixo de 1.5', 'Under 2.5': 'Abaixo de 2.5', 'Under 3.5': 'Abaixo de 3.5', 'Yes': 'Sim', 'No': 'Não'};
+    
     
     async function carregarOddsReais() {
       const API_KEY = "69b92fb729838ba69139a6d92c457f83";
@@ -142,14 +141,21 @@ document.addEventListener('DOMContentLoaded', function () {
           let mercadoPrincipalHTML = '';
           if (mercadoPrincipal) {
             mercadoPrincipal.values.forEach(odd => {
-              const timeRelacionado = ['Home', 'Casa'].includes(odd.value) ? homeTeam :
-                                      ['Away', 'Visitante'].includes(odd.value) ? awayTeam :
-                                      `${homeTeam} x ${awayTeam}`;
+              let nomeTraduzido = odd.value;
+                  if (odd.value === 'Home') nomeTraduzido = 'Casa';
+                     else if (odd.value === 'Away') nomeTraduzido = 'Fora';
+                        else if (odd.value === 'Draw') nomeTraduzido = 'Empate';
+
+                      const timeRelacionado = ['Mandante'].includes(nomeTraduzido) ? homeTeam :
+                        ['Visitante'].includes(nomeTraduzido) ? awayTeam :
+                        `${homeTeam} x ${awayTeam}`;
+
 
               mercadoPrincipalHTML += `<label>
-                <input type="checkbox" class="jogoCheck" data-nome="${odd.value}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-                ${odd.value} - ${parseFloat(odd.odd).toFixed(2)}
-              </label>`;
+              <input type="checkbox" class="jogoCheck" data-nome="${nomeTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+              ${nomeTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+             </label>`;
+
             });
           }
 
@@ -161,10 +167,17 @@ document.addEventListener('DOMContentLoaded', function () {
                                       ['Away', 'Visitante'].includes(odd.value) ? awayTeam :
                                       `${homeTeam} x ${awayTeam}`;
 
-              maisOddsHTML += `<label>
-                <input type="checkbox" class="jogoCheck" data-nome="${bet.name}: ${odd.value}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-                ${odd.value} - ${parseFloat(odd.odd).toFixed(2)}
-              </label>`;
+          let valorTraduzido = odd.value;
+            if (valorTraduzido === 'Home') valorTraduzido = 'Casa';
+            else if (valorTraduzido === 'Away') valorTraduzido = 'Fora';
+            else if (valorTraduzido === 'Draw') valorTraduzido = 'Empate';
+
+
+         maisOddsHTML += `<label>
+         <input type="checkbox" class="jogoCheck" data-nome="${bet.name}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+            ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+       </label>`;
+
             });
             maisOddsHTML += `<hr>`;
           });
