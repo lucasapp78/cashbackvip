@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="pt-br">
@@ -92,6 +93,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </script>
 <script>
+
+function traduzirValorOdd(valor) {
+    if (typeof valor !== 'string') valor = String(valor);
+
+    return valor
+        .replace(/\bHome\b/g, 'Casa')
+        .replace(/\bAway\b/g, 'Fora')
+        .replace(/\bDraw\b/g, 'Empate')
+        .replace(/\bYes\b/g, 'Sim')
+        .replace(/\bNo\b/g, 'Não')
+        .replace(/\bOver\b/g, 'Acima')
+        .replace(/\bUnder\b/g, 'Abaixo');
+}
+
+function traduzirMercado(nomeOriginal) {
+    const traducoes = {
+        "Match Winner": "Resultado Final",
+        "Second Half Winner": "Resultado 2º Tempo",
+        "Asian Handicap": "Handicap Asiático",
+        "Over/Under 1.5 Goals": "Acima/Abaixo 1.5 Gols",
+        "Over/Under 2.5 Goals": "Acima/Abaixo 2.5 Gols",
+        "Both Teams to Score": "Ambas Marcam",
+        "Correct Score": "Placar Correto",
+        "Total Goals": "Total de Gols",
+        "First Half Winner": "Resultado 1º Tempo",
+        "Correct Score - First Half": "Placar Correto 1º Tempo"
+    };
+    return traducoes[nomeOriginal] || nomeOriginal;
+}
+
     
     
     async function carregarOddsReais() {
@@ -141,44 +172,32 @@ document.addEventListener('DOMContentLoaded', function () {
           let mercadoPrincipalHTML = '';
           if (mercadoPrincipal) {
             mercadoPrincipal.values.forEach(odd => {
-              let nomeTraduzido = odd.value;
-                  if (odd.value === 'Home') nomeTraduzido = 'Casa';
-                     else if (odd.value === 'Away') nomeTraduzido = 'Fora';
-                        else if (odd.value === 'Draw') nomeTraduzido = 'Empate';
-
-                      const timeRelacionado = ['Mandante'].includes(nomeTraduzido) ? homeTeam :
-                        ['Visitante'].includes(nomeTraduzido) ? awayTeam :
-                        `${homeTeam} x ${awayTeam}`;
-
+              const timeRelacionado = ['Home', 'Casa'].includes(odd.value) ? homeTeam :
+                                      ['Away', 'Visitante'].includes(odd.value) ? awayTeam :
+                                      `${homeTeam} x ${awayTeam}`;
 
               mercadoPrincipalHTML += `<label>
-              <input type="checkbox" class="jogoCheck" data-nome="${nomeTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-              ${nomeTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-             </label>`;
-
+                <input type="checkbox" class="jogoCheck" data-nome="${odd.value}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+                ${odd.value} - ${parseFloat(odd.odd).toFixed(2)}
+              </label>`;
             });
           }
 
           let maisOddsHTML = '';
           outrosMercados.forEach(bet => {
             maisOddsHTML += `<strong>${bet.name}</strong><br>`;
-            bet.values.forEach(odd => {
-              const timeRelacionado = ['Home', 'Casa'].includes(odd.value) ? homeTeam :
-                                      ['Away', 'Visitante'].includes(odd.value) ? awayTeam :
-                                      `${homeTeam} x ${awayTeam}`;
+            
+bet.values.forEach(odd => {
+  const valorTraduzido = traduzirValorOdd(odd.value);
+  const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
+                          ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
+                          `${homeTeam} x ${awayTeam}`;
+  maisOddsHTML += `<label>
+    <input type="checkbox" class="jogoCheck" data-nome="${traduzirMercado(bet.name)}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+    ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+  </label>`;
+});
 
-          let valorTraduzido = odd.value;
-            if (valorTraduzido === 'Home') valorTraduzido = 'Casa';
-            else if (valorTraduzido === 'Away') valorTraduzido = 'Fora';
-            else if (valorTraduzido === 'Draw') valorTraduzido = 'Empate';
-
-
-         maisOddsHTML += `<label>
-         <input type="checkbox" class="jogoCheck" data-nome="${bet.name}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-            ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-       </label>`;
-
-            });
             maisOddsHTML += `<hr>`;
           });
 
