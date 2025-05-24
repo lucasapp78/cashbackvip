@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 
 <html lang="pt-br">
@@ -123,119 +125,131 @@ function traduzirValorOdd(valor) {
     }
 
     async function carregarOddsReais() {
-      const API_KEY = "69b92fb729838ba69139a6d92c457f83";
-      const ligaID = document.getElementById("liga").value;
-      const dataSelecionada = document.getElementById("dataJogo").value;
-      const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
+  const API_KEY = "69b92fb729838ba69139a6d92c457f83";
+  const ligaID = document.getElementById("liga").value;
+  const dataSelecionada = document.getElementById("dataJogo").value;
+  const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
+  const headers = {
+    "x-apisports-key": API_KEY,
+    "Accept": "application/json"
+  };
 
-      const headers = {
-        "x-apisports-key": API_KEY,
-        "Accept": "application/json"
-      };
+  const temporadas = [2024, 2025]; // Vamos tentar ambas
+  const inputs = document.getElementById("inputs");
+  inputs.innerHTML = "";
 
-      try {
-        const fixturesResp = await fetch(`https://v3.football.api-sports.io/fixtures?league=${ligaID}&season=2025`, { headers });
-        const fixturesJson = await fixturesResp.json();
-        const fixtures = fixturesJson.response;
+  let todosFixtures = [];
 
-        const inputs = document.getElementById("inputs");
-        inputs.innerHTML = "";
+  try {
+    // 1. Carregar fixtures de todas as temporadas
+    for (const temporada of temporadas) {
+      const url = `https://v3.football.api-sports.io/fixtures?league=${ligaID}&season=${temporada}`;
+      console.log("Buscando fixtures:", url);
+      const response = await fetch(url, { headers });
+      const data = await response.json();
 
-        for (const fixture of fixtures) {
-          const fixtureId = fixture.fixture.id;
-          const dataHora = new Date(fixture.fixture.date);
-
-          if (dataSelecionada) {
-            const dataFormatada = dataHora.toISOString().split("T")[0];
-            if (dataFormatada !== dataSelecionada) {
-              continue;
-            }
-          }
-
-          const homeTeam = fixture.teams.home.name;
-          const awayTeam = fixture.teams.away.name;
-
-          if (filtroTime &&
-              !homeTeam.toLowerCase().includes(filtroTime) &&
-              !awayTeam.toLowerCase().includes(filtroTime)) {
-            continue;
-          }
-
-          const oddsResp = await fetch(`https://v3.football.api-sports.io/odds?fixture=${fixtureId}`, { headers });
-          const oddsJson = await oddsResp.json();
-          const oddsData = oddsJson.response[0];
-
-          if (!oddsData || !oddsData.bookmakers?.length) continue;
-
-          const bets = oddsData.bookmakers[0].bets;
-          const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
-          const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-
-          const mercadoPrincipal = bets.find(bet => bet.name === "Match Winner");
-          const outrosMercados = bets.filter(bet => bet.name !== "Match Winner");
-
-          let mercadoPrincipalHTML = '';
-          if (mercadoPrincipal) {
-            mercadoPrincipal.values.forEach(odd => {
-              let nomeTraduzido = odd.value;
-              if (odd.value === 'Home') nomeTraduzido = 'Casa';
-              else if (odd.value === 'Away') nomeTraduzido = 'Fora';
-              else if (odd.value === 'Draw') nomeTraduzido = 'Empate';
-
-              const timeRelacionado = nomeTraduzido === 'Casa' ? homeTeam :
-                                      nomeTraduzido === 'Fora' ? awayTeam :
-                                      `${homeTeam} x ${awayTeam}`;
-
-              mercadoPrincipalHTML += `<label>
-              <input type="checkbox" class="jogoCheck" data-nome="${nomeTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-              ${nomeTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-             </label>`;
-            });
-          }
-
-          let maisOddsHTML = '';
-          outrosMercados.forEach(bet => {
-            const nomeMercado = traduzirMercado(bet.name);
-            maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
-            bet.values.forEach(odd => {
-              const valorTraduzido = traduzirValorOdd(odd.value);
-              const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
-                                      ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
-                                      `${homeTeam} x ${awayTeam}`;
-              maisOddsHTML += `<label>
-                <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-                ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-              </label>`;
-            });
-            maisOddsHTML += `<hr>`;
-          });
-
-          const collapseId = `collapse-${fixtureId}`;
-
-          inputs.innerHTML += `
-            <div class="jogo-card">
-              <div class="jogo-header">${ligaID}</div>
-              <div class="jogo-conteudo">
-                <div class="jogo-info">🗓️ ${dataStr} às ${horaStr}</div>
-                <div class="jogo-times">⚽ ${homeTeam} vs 🟢 ${awayTeam}</div>
-                <div class="mercado-principal"><strong>Resultado Final</strong>${mercadoPrincipalHTML || "<p>Sem odds disponíveis</p>"}</div>
-                <button class="btn btn-secondary btn-mais-odds" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">Ver Mais Odds</button>
-                <div class="collapse mt-2 mais-odds" id="${collapseId}">
-                  <div class="card card-body">${maisOddsHTML || "<p>Sem mais odds disponíveis</p>"}</div>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-
-        if (!inputs.innerHTML.trim()) {
-          inputs.innerHTML = "<p class='text-danger text-center'>Nenhuma partida com odds encontradas.</p>";
-        }
-      } catch (error) {
-        console.error('Erro ao carregar fixtures ou odds:', error);
-        alert('Erro ao carregar dados. Veja o console para mais detalhes.');
+      if (!data.response || !Array.isArray(data.response)) {
+        console.warn(`Sem dados para temporada ${temporada}`);
+        continue;
       }
+
+      todosFixtures = todosFixtures.concat(data.response);
     }
+
+    if (todosFixtures.length === 0) {
+      inputs.innerHTML = "<p class='text-warning text-center'>Nenhum jogo encontrado nas temporadas disponíveis.</p>";
+      return;
+    }
+
+    // 2. Processar os jogos
+    for (const fixture of todosFixtures) {
+      const fixtureId = fixture.fixture.id;
+      const dataHora = new Date(fixture.fixture.date);
+
+      if (dataSelecionada) {
+        const dataFormatada = dataHora.toISOString().split("T")[0];
+        if (dataFormatada !== dataSelecionada) continue;
+      }
+
+      const homeTeam = fixture.teams.home.name;
+      const awayTeam = fixture.teams.away.name;
+
+      if (filtroTime &&
+          !homeTeam.toLowerCase().includes(filtroTime) &&
+          !awayTeam.toLowerCase().includes(filtroTime)) {
+        continue;
+      }
+
+      const oddsResp = await fetch(`https://v3.football.api-sports.io/odds?fixture=${fixtureId}`, { headers });
+      const oddsJson = await oddsResp.json();
+      const oddsData = oddsJson.response[0];
+      if (!oddsData || !oddsData.bookmakers?.length) continue;
+
+      const bets = oddsData.bookmakers[0].bets;
+      const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
+      const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+
+      const mercadoPrincipal = bets.find(bet => bet.name === "Match Winner");
+      const outrosMercados = bets.filter(bet => bet.name !== "Match Winner");
+
+      let mercadoPrincipalHTML = '';
+      if (mercadoPrincipal) {
+        mercadoPrincipal.values.forEach(odd => {
+          const nomeTraduzido = traduzirValorOdd(odd.value);
+          const timeRelacionado = nomeTraduzido === 'Casa' ? homeTeam :
+                                  nomeTraduzido === 'Fora' ? awayTeam :
+                                  `${homeTeam} x ${awayTeam}`;
+          mercadoPrincipalHTML += `<label>
+          <input type="checkbox" class="jogoCheck" data-nome="${nomeTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+          ${nomeTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+         </label>`;
+        });
+      }
+
+      let maisOddsHTML = '';
+      outrosMercados.forEach(bet => {
+        const nomeMercado = traduzirMercado(bet.name);
+        maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
+        bet.values.forEach(odd => {
+          const valorTraduzido = traduzirValorOdd(odd.value);
+          const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
+                                  ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
+                                  `${homeTeam} x ${awayTeam}`;
+          maisOddsHTML += `<label>
+            <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+            ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+          </label>`;
+        });
+        maisOddsHTML += `<hr>`;
+      });
+
+      const collapseId = `collapse-${fixtureId}`;
+
+      inputs.innerHTML += `
+        <div class="jogo-card">
+          <div class="jogo-header">${ligaID}</div>
+          <div class="jogo-conteudo">
+            <div class="jogo-info">🗓️ ${dataStr} às ${horaStr}</div>
+            <div class="jogo-times">⚽ ${homeTeam} vs 🟢 ${awayTeam}</div>
+            <div class="mercado-principal"><strong>Resultado Final</strong>${mercadoPrincipalHTML || "<p>Sem odds disponíveis</p>"}</div>
+            <button class="btn btn-secondary btn-mais-odds" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">Ver Mais Odds</button>
+            <div class="collapse mt-2 mais-odds" id="${collapseId}">
+              <div class="card card-body">${maisOddsHTML || "<p>Sem mais odds disponíveis</p>"}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (!inputs.innerHTML.trim()) {
+      inputs.innerHTML = "<p class='text-danger text-center'>Nenhuma partida com odds encontradas após filtragem.</p>";
+    }
+
+  } catch (error) {
+    console.error('Erro ao carregar fixtures ou odds:', error);
+    alert('Erro ao carregar dados. Verifique o console para detalhes.');
+  }
+}
 
     function gerarCombinacoes(array, k) {
       let res = [];
