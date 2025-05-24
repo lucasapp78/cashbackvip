@@ -52,7 +52,7 @@
 <option value="39">Premier League</option>
 <option value="140">La Liga</option>
 <option value="2">Champions League</option>
-</select>
+</select><label for="dataJogo">Data do Jogo:</label><input class="form-control mb-3" id="dataJogo" type="date"/><label for="filtroTime">Filtrar por Time:</label><input class="form-control mb-3" id="filtroTime" placeholder="Ex: Flamengo, Chelsea, Real Madrid" type="text"/>
 <button class="btn btn-primary w-100 mb-3" onclick="carregarOddsReais()">🔄 Carregar Odds Reais</button>
 <label for="tipoDesdobramento">Tipo de aposta (acertos):</label>
 <select class="form-select mb-3" id="tipoDesdobramento">
@@ -128,6 +128,7 @@ function traduzirMercado(nomeOriginal) {
     async function carregarOddsReais() {
       const API_KEY = "69b92fb729838ba69139a6d92c457f83";
       const ligaID = document.getElementById("liga").value;
+  const dataSelecionada = document.getElementById("dataJogo").value;
       const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2025&bookmaker=32`;
 
       const headers = {
@@ -160,9 +161,22 @@ function traduzirMercado(nomeOriginal) {
             const fixtureData = fixtureJson.response[0];
             homeTeam = fixtureData?.teams?.home?.name || homeTeam;
             awayTeam = fixtureData?.teams?.away?.name || awayTeam;
+
+          const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
+          if (filtroTime && 
+              !homeTeam.toLowerCase().includes(filtroTime) && 
+              !awayTeam.toLowerCase().includes(filtroTime)) {
+            continue;
+          }
           } catch (e) { console.warn("Erro ao carregar nomes dos times para fixture:", fixtureId); }
 
           const dataHora = new Date(fixture.date);
+      if (dataSelecionada) {
+        const dataFormatada = dataHora.toISOString().split("T")[0];
+        if (dataFormatada !== dataSelecionada) {
+          continue;
+        }
+      }
           const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
           const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
 
