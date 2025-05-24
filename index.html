@@ -94,9 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 
 function traduzirValorOdd(valor) {
-    if (typeof valor !== 'string') valor = String(valor);
-
-    return valor
+      if (typeof valor !== 'string') valor = String(valor);
+      return valor
         .replace(/\bHome\b/g, 'Casa')
         .replace(/\bAway\b/g, 'Fora')
         .replace(/\bDraw\b/g, 'Empate')
@@ -104,10 +103,10 @@ function traduzirValorOdd(valor) {
         .replace(/\bNo\b/g, 'Não')
         .replace(/\bOver\b/g, 'Acima')
         .replace(/\bUnder\b/g, 'Abaixo');
-}
+    }
 
-function traduzirMercado(nomeOriginal) {
-    const traducoes = {
+    function traduzirMercado(nomeOriginal) {
+      const traducoes = {
         "Match Winner": "Resultado Final",
         "Second Half Winner": "Resultado 2º Tempo",
         "Asian Handicap": "Handicap Asiático",
@@ -119,17 +118,15 @@ function traduzirMercado(nomeOriginal) {
         "Total Goals": "Total de Gols",
         "First Half Winner": "Resultado 1º Tempo",
         "Correct Score - First Half": "Placar Correto 1º Tempo"
-    };
-    return traducoes[nomeOriginal] || nomeOriginal;
-}
+      };
+      return traducoes[nomeOriginal] || nomeOriginal;
+    }
 
-    
-    
     async function carregarOddsReais() {
       const API_KEY = "69b92fb729838ba69139a6d92c457f83";
       const ligaID = document.getElementById("liga").value;
-  const dataSelecionada = document.getElementById("dataJogo").value;
-      const url = `https://v3.football.api-sports.io/odds?league=${ligaID}&season=2025&bookmaker=32`;
+      const dataSelecionada = document.getElementById("dataJogo").value;
+      const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
 
       const headers = {
         "x-apisports-key": API_KEY,
@@ -137,46 +134,40 @@ function traduzirMercado(nomeOriginal) {
       };
 
       try {
-        const response = await fetch(url, { headers });
-        const json = await response.json();
-        const data = json.response;
+        const fixturesResp = await fetch(`https://v3.football.api-sports.io/fixtures?league=${ligaID}&season=2025`, { headers });
+        const fixturesJson = await fixturesResp.json();
+        const fixtures = fixturesJson.response;
 
         const inputs = document.getElementById("inputs");
         inputs.innerHTML = "";
 
-        for (const item of data) {
-          const fixture = item.fixture;
-          const fixtureId = fixture?.id;
-          const bookmaker = item.bookmakers?.[0];
-          const bets = bookmaker?.bets;
+        for (const fixture of fixtures) {
+          const fixtureId = fixture.fixture.id;
+          const dataHora = new Date(fixture.fixture.date);
 
-          if (!fixture || !fixtureId || !Array.isArray(bets)) continue;
+          if (dataSelecionada) {
+            const dataFormatada = dataHora.toISOString().split("T")[0];
+            if (dataFormatada !== dataSelecionada) {
+              continue;
+            }
+          }
 
-          let homeTeam = "Time Casa";
-          let awayTeam = "Time Visitante";
+          const homeTeam = fixture.teams.home.name;
+          const awayTeam = fixture.teams.away.name;
 
-          try {
-            const fixtureResp = await fetch(`https://v3.football.api-sports.io/fixtures?id=${fixtureId}`, { headers });
-            const fixtureJson = await fixtureResp.json();
-            const fixtureData = fixtureJson.response[0];
-            homeTeam = fixtureData?.teams?.home?.name || homeTeam;
-            awayTeam = fixtureData?.teams?.away?.name || awayTeam;
-
-          const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
-          if (filtroTime && 
-              !homeTeam.toLowerCase().includes(filtroTime) && 
+          if (filtroTime &&
+              !homeTeam.toLowerCase().includes(filtroTime) &&
               !awayTeam.toLowerCase().includes(filtroTime)) {
             continue;
           }
-          } catch (e) { console.warn("Erro ao carregar nomes dos times para fixture:", fixtureId); }
 
-          const dataHora = new Date(fixture.date);
-      if (dataSelecionada) {
-        const dataFormatada = dataHora.toISOString().split("T")[0];
-        if (dataFormatada !== dataSelecionada) {
-          continue;
-        }
-      }
+          const oddsResp = await fetch(`https://v3.football.api-sports.io/odds?fixture=${fixtureId}`, { headers });
+          const oddsJson = await oddsResp.json();
+          const oddsData = oddsJson.response[0];
+
+          if (!oddsData || !oddsData.bookmakers?.length) continue;
+
+          const bets = oddsData.bookmakers[0].bets;
           const dataStr = dataHora.toLocaleDateString("pt-BR", { day: '2-digit', month: 'short' });
           const horaStr = dataHora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
 
@@ -187,41 +178,35 @@ function traduzirMercado(nomeOriginal) {
           if (mercadoPrincipal) {
             mercadoPrincipal.values.forEach(odd => {
               let nomeTraduzido = odd.value;
-                  if (odd.value === 'Home') nomeTraduzido = 'Casa';
-                     else if (odd.value === 'Away') nomeTraduzido = 'Fora';
-                        else if (odd.value === 'Draw') nomeTraduzido = 'Empate';
+              if (odd.value === 'Home') nomeTraduzido = 'Casa';
+              else if (odd.value === 'Away') nomeTraduzido = 'Fora';
+              else if (odd.value === 'Draw') nomeTraduzido = 'Empate';
 
-                      const timeRelacionado = ['Mandante'].includes(nomeTraduzido) ? homeTeam :
-                        ['Visitante'].includes(nomeTraduzido) ? awayTeam :
-                        `${homeTeam} x ${awayTeam}`;
-
+              const timeRelacionado = nomeTraduzido === 'Casa' ? homeTeam :
+                                      nomeTraduzido === 'Fora' ? awayTeam :
+                                      `${homeTeam} x ${awayTeam}`;
 
               mercadoPrincipalHTML += `<label>
               <input type="checkbox" class="jogoCheck" data-nome="${nomeTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
               ${nomeTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
              </label>`;
-
             });
           }
 
           let maisOddsHTML = '';
           outrosMercados.forEach(bet => {
-            
-            
-const nomeMercado = traduzirMercado(bet.name);
-maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
-
-bet.values.forEach(odd => {
-  const valorTraduzido = traduzirValorOdd(odd.value);
-  const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
-                          ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
-                          `${homeTeam} x ${awayTeam}`;
-  maisOddsHTML += `<label>
-    <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-    ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-  </label>`;
-});
-
+            const nomeMercado = traduzirMercado(bet.name);
+            maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
+            bet.values.forEach(odd => {
+              const valorTraduzido = traduzirValorOdd(odd.value);
+              const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
+                                      ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
+                                      `${homeTeam} x ${awayTeam}`;
+              maisOddsHTML += `<label>
+                <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+                ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+              </label>`;
+            });
             maisOddsHTML += `<hr>`;
           });
 
@@ -244,11 +229,11 @@ bet.values.forEach(odd => {
         }
 
         if (!inputs.innerHTML.trim()) {
-          inputs.innerHTML = "<p class='text-danger text-center'>Nenhuma odd encontrada para esta liga.</p>";
+          inputs.innerHTML = "<p class='text-danger text-center'>Nenhuma partida com odds encontradas.</p>";
         }
       } catch (error) {
-        console.error('Erro ao carregar odds:', error);
-        alert('Erro ao carregar odds. Veja o console para mais detalhes.');
+        console.error('Erro ao carregar fixtures ou odds:', error);
+        alert('Erro ao carregar dados. Veja o console para mais detalhes.');
       }
     }
 
