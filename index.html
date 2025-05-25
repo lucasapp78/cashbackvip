@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -125,6 +126,18 @@ button:hover {
 .btn-mais-odds:hover {
     background-color: #444;
 }
+
+.collapse-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+}
+.collapse-wrapper.show {
+    max-height: 1000px;
+    opacity: 1;
+}
+
 </style>
 </head>
 <body>
@@ -265,21 +278,32 @@ async function carregarOddsReais() {
             }
 
             let maisOddsHTML = '';
-            outrosMercados.forEach(bet => {
-                const nomeMercado = traduzirMercado(bet.name);
-                maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
-                bet.values.forEach(odd => {
-                    const valorTraduzido = traduzirValorOdd(odd.value);
-                    const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
-                                            ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
-                                            `${homeTeam} x ${awayTeam}`;
-                    maisOddsHTML += `<label>
-                    <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-                    ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
-                    </label>`;
-                });
-                maisOddsHTML += `<hr>`;
-            });
+            
+outrosMercados.forEach((bet, index) => {
+    const nomeMercado = traduzirMercado(bet.name);
+    const mercadoId = `mercado-${fixtureId}-${index}`;
+    maisOddsHTML += `
+    <div style="margin-bottom:10px;">
+        <button onclick="document.getElementById('${mercadoId}').classList.toggle('show')" style="background:#2c2c2c;color:#fff;border:none;padding:8px 12px;border-radius:8px;width:100%;text-align:left;font-weight:bold;">
+            ➕ ${nomeMercado}
+        </button>
+        <div id="${mercadoId}" class="collapse-wrapper">
+    `;
+
+    bet.values.forEach(odd => {
+        const valorTraduzido = traduzirValorOdd(odd.value);
+        const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
+                                 ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
+                                 `${homeTeam} x ${awayTeam}`;
+        maisOddsHTML += `<label>
+        <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+        ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+        </label>`;
+    });
+
+    maisOddsHTML += `</div></div>`;
+});
+
 
             const collapseId = `collapse-${fixtureId}`;
             const logoHome = fixture.teams.home.logo;
@@ -315,6 +339,7 @@ async function carregarOddsReais() {
     }
 }
 
+
 document.addEventListener('click', function(e){
     if (e.target && e.target.classList.contains('btn-mais-odds')) {
         const target = e.target.nextElementSibling;
@@ -326,7 +351,22 @@ document.addEventListener('click', function(e){
             e.target.innerText = 'Ver Menos Odds';
         }
     }
+
+    // Collapse animado por botão de mercado
+    if (e.target && e.target.tagName === 'BUTTON' && e.target.textContent.trim().startsWith('➕') || e.target.textContent.trim().startsWith('➖')) {
+        const btn = e.target;
+        const mercadoId = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+        const collapseDiv = document.getElementById(mercadoId);
+        if (collapseDiv.classList.contains('show')) {
+            collapseDiv.classList.remove('show');
+            btn.innerText = btn.innerText.replace('➖', '➕');
+        } else {
+            collapseDiv.classList.add('show');
+            btn.innerText = btn.innerText.replace('➕', '➖');
+        }
+    }
 });
+
 
 function gerarCombinacoes(array, k) {
     let res = [];
