@@ -203,6 +203,7 @@ function traduzirMercado(nomeOriginal) {
     return traducoes[nomeOriginal] || nomeOriginal;
 }
 
+
 async function carregarOddsReais() {
     const ligaID = document.getElementById("liga").value;
     const filtroTime = document.getElementById("filtroTime").value.trim().toLowerCase();
@@ -270,20 +271,30 @@ async function carregarOddsReais() {
             }
 
             let maisOddsHTML = '';
-            outrosMercados.forEach(bet => {
+            outrosMercados.forEach((bet, index) => {
                 const nomeMercado = traduzirMercado(bet.name);
-                maisOddsHTML += `<strong>${nomeMercado}</strong><br>`;
+                const mercadoId = `mercado-${fixtureId}-${index}`;
+
+                let oddsHTML = '';
                 bet.values.forEach(odd => {
                     const valorTraduzido = traduzirValorOdd(odd.value);
                     const timeRelacionado = ['Casa', 'Home'].includes(valorTraduzido) ? homeTeam :
                                             ['Fora', 'Away'].includes(valorTraduzido) ? awayTeam :
                                             `${homeTeam} x ${awayTeam}`;
-                    maisOddsHTML += `<label>
-                    <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
-                    ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
+                    oddsHTML += `<label>
+                        <input type="checkbox" class="jogoCheck" data-nome="${nomeMercado}: ${valorTraduzido}" data-odd="${parseFloat(odd.odd).toFixed(2)}" data-jogo="${timeRelacionado}" />
+                        ${valorTraduzido} - ${parseFloat(odd.odd).toFixed(2)}
                     </label>`;
                 });
-                maisOddsHTML += `<hr>`;
+
+                maisOddsHTML += `
+                    <div style="margin-bottom: 10px;">
+                        <button class="btn-toggle-mercado" onclick="document.getElementById('${mercadoId}').style.display = (document.getElementById('${mercadoId}').style.display === 'block' ? 'none' : 'block')">➕ ${nomeMercado}</button>
+                        <div class="collapse mercado-odds" id="${mercadoId}" style="display:none;margin-top:5px;padding-left:10px;">
+                            ${oddsHTML || "<p>Sem odds disponíveis</p>"}
+                        </div>
+                    </div>
+                `;
             });
 
             const collapseId = `collapse-${fixtureId}`;
@@ -308,7 +319,7 @@ async function carregarOddsReais() {
                     <div class="mercado-principal"><strong>Resultado Final</strong>${mercadoPrincipalHTML || "<p>Sem odds disponíveis</p>"}</div>
                     <button class="btn-mais-odds" type="button" onclick="document.getElementById('${collapseId}').classList.toggle('show')">Ver Mais Odds</button>
                     <div class="collapse mais-odds" id="${collapseId}" style="display:none;">
-                    <div class="card card-body">${maisOddsHTML || "<p>Sem mais odds disponíveis</p>"}</div>
+                        <div class="card card-body">${maisOddsHTML || "<p>Sem mais odds disponíveis</p>"}</div>
                     </div>
                 </div>
                 </div>
@@ -319,6 +330,7 @@ async function carregarOddsReais() {
         alert('Erro ao carregar dados. Verifique o console.');
     }
 }
+
 
 document.addEventListener('click', function(e){
     if (e.target && e.target.classList.contains('btn-mais-odds')) {
