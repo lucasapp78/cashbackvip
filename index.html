@@ -155,6 +155,19 @@ button:hover {
 
 <script>
 const API_KEY = "69b92fb729838ba69139a6d92c457f83";
+const selecoesGlobais = new Set();
+
+document.addEventListener("change", function (e) {
+    if (e.target && e.target.classList.contains("jogoCheck")) {
+        const cb = e.target;
+        const id = `${cb.dataset.nome}|${cb.dataset.odd}|${cb.dataset.jogo}`;
+        if (cb.checked) {
+            selecoesGlobais.add(id);
+        } else {
+            selecoesGlobais.delete(id);
+        }
+    }
+});
 
 function traduzirValorOdd(valor) {
     if (typeof valor !== 'string') valor = String(valor);
