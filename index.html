@@ -110,61 +110,9 @@ button:hover {
 .btn-mais-odds:hover {
     background-color: #444;
 }
-
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 10px;
-}
-
-.jogo-times {
-    flex-direction: column;
-    gap: 10px;
-}
-
-.jogo-times img {
-    width: 40px;
-    height: 40px;
-}
-
-.mercado-principal {
-    flex-direction: column;
-    align-items: stretch;
-}
-
-label, input, select, button {
-    font-size: 1rem;
-}
-
-@media (max-width: 480px) {
-    button {
-        font-size: 0.95rem;
-        padding: 8px;
-    }
-
-    .jogo-card {
-        padding: 12px;
-    }
-
-    .jogo-header {
-        font-size: 0.9rem;
-    }
-
-    .jogo-times strong {
-        font-size: 1rem;
-    }
-
-    .mais-odds label {
-        font-size: 0.9rem;
-    }
-
-    input, select, label {
-        font-size: 0.95rem;
-    }
-}
 </style>
 </head>
-<body><div class=\"container\">
+<body>
 
 <h2>L.A Cashback VIP 👑</h2>
 
@@ -426,7 +374,7 @@ function exportarPDF() {
         return;
     }
     const janela = window.open('', '', 'width=800,height=600');
-    janela.document.write(`<html><head><title>Bilhetes - L.A Cashback VIP 👑</title></head><body><h2>Bilhetes - L.A Cashback VIP 👑</h2>${resultado.innerHTML}</div></body></html>`);
+    janela.document.write(`<html><head><title>Bilhetes - L.A Cashback VIP 👑</title></head><body><h2>Bilhetes - L.A Cashback VIP 👑</h2>${resultado.innerHTML}</body></html>`);
     janela.document.close();
     janela.print();
 }
